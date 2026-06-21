@@ -12,6 +12,7 @@ namespace GGemCo2DTutorialEditor
         private const string Title = "Addressable 셋팅하기";
 
         private SettingTableTutorial _settingTableTutorial;
+        private SettingTutorial _settingTutorial;
         private Vector2 _scrollPosition;
 
         /// <summary>
@@ -27,10 +28,7 @@ namespace GGemCo2DTutorialEditor
         /// <summary>
         /// Tutorial Addressables 설정 창을 엽니다.
         /// </summary>
-        [MenuItem(
-            ConfigEditorTutorial.NameToolSettingAddressable,
-            false,
-            (int)ConfigEditorTutorial.ToolOrdering.SettingAddressable)]
+        [MenuItem(ConfigEditorTutorial.NameToolSettingAddressable, false, (int)ConfigEditorTutorial.ToolOrdering.SettingAddressable)]
         public static void ShowWindow()
         {
             GetWindow<AddressableEditorTutorial>(Title);
@@ -45,6 +43,7 @@ namespace GGemCo2DTutorialEditor
 
             ButtonHeight = 40f;
             _settingTableTutorial = new SettingTableTutorial(this);
+            _settingTutorial = new SettingTutorial(this);
         }
 
         /// <summary>
@@ -61,6 +60,7 @@ namespace GGemCo2DTutorialEditor
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     _settingTableTutorial?.OnGUI();
+                    _settingTutorial?.OnGUI();
                 }
 
                 EditorGUILayout.Space(20f);
