@@ -31,6 +31,12 @@ namespace GGemCo2DTutorialEditor
             IReadOnlyList<TutorialAuthoringAsset> assets,
             string assetPath)
         {
+            TutorialAuthoringValidationResult validationResult = TutorialAuthoringValidator.ValidateCatalog(assets);
+            if (!validationResult.IsValid)
+            {
+                return TutorialExportResult.Failure(validationResult.BuildErrorSummary());
+            }
+
             if (!TryBuildCatalog(assets, out TutorialCatalog catalog, out string error))
             {
                 return TutorialExportResult.Failure(error);

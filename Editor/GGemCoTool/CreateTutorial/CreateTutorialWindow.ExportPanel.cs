@@ -24,6 +24,14 @@ namespace GGemCo2DTutorialEditor
             _asset.EnsureDefaults();
             MarkAssetDirty();
 
+            _lastValidationResult = TutorialAuthoringValidator.Validate(_asset);
+            if (!_lastValidationResult.IsValid)
+            {
+                _statusMessage = _lastValidationResult.BuildErrorSummary();
+                _statusType = MessageType.Error;
+                return;
+            }
+
             string path = EditorUtility.SaveFilePanelInProject(
                 "Tutorial JSON Export",
                 TutorialJsonExporter.GetDefaultDefinitionFileName(_asset),
@@ -63,6 +71,14 @@ namespace GGemCo2DTutorialEditor
                     assets[i].EnsureDefaults();
                     EditorUtility.SetDirty(assets[i]);
                 }
+            }
+
+            TutorialAuthoringValidationResult catalogValidationResult = TutorialAuthoringValidator.ValidateCatalog(assets);
+            if (!catalogValidationResult.IsValid)
+            {
+                _statusMessage = catalogValidationResult.BuildErrorSummary();
+                _statusType = MessageType.Error;
+                return;
             }
 
             string path = EditorUtility.SaveFilePanelInProject(

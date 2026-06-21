@@ -60,12 +60,13 @@ namespace GGemCo2DTutorialEditor
             try
             {
                 asset.EnsureDefaults();
-                TutorialDefinition definition = asset.ToRuntimeDefinition();
-                if (!TutorialDefinitionValidator.ValidateRuntime(asset.Uid, definition, out string error))
+                TutorialAuthoringValidationResult validationResult = TutorialAuthoringValidator.Validate(asset);
+                if (!validationResult.IsValid)
                 {
-                    return TutorialExportResult.Failure(error);
+                    return TutorialExportResult.Failure(validationResult.BuildErrorSummary());
                 }
 
+                TutorialDefinition definition = asset.ToRuntimeDefinition();
                 string json = Serialize(definition);
                 return WriteJsonAsset(
                     assetPath,

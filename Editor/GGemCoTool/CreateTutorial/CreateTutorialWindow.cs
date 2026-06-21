@@ -21,6 +21,7 @@ namespace GGemCo2DTutorialEditor
         private int _selectedStepIndex = -1;
         private string _statusMessage = "Tutorial Authoring Asset을 선택하거나 새로 생성하십시오.";
         private MessageType _statusType = MessageType.Info;
+        private TutorialAuthoringValidationResult _lastValidationResult;
 
         /// <summary>
         /// 튜토리얼 제작 창을 엽니다.
@@ -97,6 +98,11 @@ namespace GGemCo2DTutorialEditor
                         PingCurrentAsset();
                     }
 
+                    if (GUILayout.Button("검증", EditorStyles.toolbarButton, GUILayout.Width(55f)))
+                    {
+                        ValidateCurrentAsset();
+                    }
+
                     if (GUILayout.Button("JSON Export", EditorStyles.toolbarButton, GUILayout.Width(90f)))
                     {
                         ExportCurrentTutorialJson();
@@ -151,6 +157,8 @@ namespace GGemCo2DTutorialEditor
 
                 EditorGUILayout.Space(8f);
                 DrawStartConditionProperty();
+                EditorGUILayout.Space(8f);
+                DrawValidationPanel();
 
                 EditorGUILayout.EndScrollView();
                 ApplyModifiedProperties();
@@ -222,9 +230,11 @@ namespace GGemCo2DTutorialEditor
             {
                 _statusMessage = "Tutorial Authoring Asset을 선택하거나 새로 생성하십시오.";
                 _statusType = MessageType.Info;
+                _lastValidationResult = null;
                 return;
             }
 
+            _lastValidationResult = null;
             SaveLastAsset(asset);
             _statusMessage = $"편집 대상: {asset.name}";
             _statusType = MessageType.Info;
