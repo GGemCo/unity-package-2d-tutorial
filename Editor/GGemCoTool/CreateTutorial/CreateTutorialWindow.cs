@@ -52,6 +52,7 @@ namespace GGemCo2DTutorialEditor
         /// </summary>
         private void OnEnable()
         {
+            ReloadTutorialTable();
             RestoreLastAsset();
             EditorApplication.playModeStateChanged -= HandlePlayModeStateChanged;
             EditorApplication.playModeStateChanged += HandlePlayModeStateChanged;
@@ -156,6 +157,8 @@ namespace GGemCo2DTutorialEditor
             using (new EditorGUILayout.VerticalScope(GUILayout.Width(LeftPanelWidth)))
             {
                 EditorGUILayout.LabelField("Tutorial 기본 정보", EditorStyles.boldLabel);
+                DrawTutorialTableSelectionPanel();
+                EditorGUILayout.Space(6f);
 
                 EditorGUI.BeginChangeCheck();
                 TutorialAuthoringAsset selectedAsset = (TutorialAuthoringAsset)EditorGUILayout.ObjectField(
@@ -281,6 +284,7 @@ namespace GGemCo2DTutorialEditor
             if (asset != null)
             {
                 asset.EnsureDefaults();
+                _selectedTutorialUid = asset.Uid;
             }
 
             _asset = asset;
