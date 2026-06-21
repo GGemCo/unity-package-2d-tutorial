@@ -1,0 +1,48 @@
+{
+  "uid": 10001,
+  "title": "기본 조작 튜토리얼",
+  "steps": [
+    {
+      "uid": 1,
+      "messageKey": "tutorial.move",
+      "conditions": [
+        {
+          "type": 3,
+          "key": "Move",
+          "intValue": 0,
+          "requiredCount": 1
+        }
+      ],
+      "actionsOnEnter": [
+        {
+          "type": 1,
+          "key": "move_guide",
+          "intValue": 0,
+          "stringValues": []
+        },
+        {
+          "type": 5,
+          "key": "",
+          "intValue": 0,
+          "stringValues": [
+            "Move"
+          ]
+        }
+      ],
+      "actionsOnExit": [
+        {
+          "type": 2,
+          "key": "move_guide",
+          "intValue": 0,
+          "stringValues": []
+        },
+        {
+          "type": 6,
+          "key": "",
+          "intValue": 0,
+          "stringValues": []
+        }
+      ]
+    }
+  ]
+}

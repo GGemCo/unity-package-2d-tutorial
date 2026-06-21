@@ -1,0 +1,26 @@
+{
+  "name": "com.ggemco.2d.tutorial",
+  "version": "0.1.0",
+  "displayName": "GGemCo 2D Tutorial",
+  "description": "GGemCo 2D Core 기반의 단계 진행, 조건 감지, 액션 실행, 입력 제한과 저장 기능을 제공하는 튜토리얼 패키지입니다.",
+  "unity": "2022.3",
+  "author": {
+    "name": "GGemCo",
+    "url": "https://github.com/GGemCo/unity-package-2d-tutorial.git"
+  },
+  "dependencies": {
+    "com.ggemco.2d.core": "2.10.2"
+  },
+  "samples": [
+    {
+      "displayName": "Tutorial Data",
+      "description": "Tutorial Catalog와 기본 조작 튜토리얼 JSON 샘플입니다.",
+      "path": "Samples~/DataAddressable"
+    }
+  ],
+  "keywords": [
+    "tutorial",
+    "onboarding",
+    "guide"
+  ]
+}
