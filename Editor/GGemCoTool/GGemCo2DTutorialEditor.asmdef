@@ -2,6 +2,9 @@
     "name": "GGemCo2DTutorialEditor",
     "rootNamespace": "GGemCo2DTutorialEditor",
     "references": [
+        "Unity.Addressables",
+        "Unity.Addressables.Editor",
+        "Unity.ResourceManager",
         "GGemCoScripts",
         "GGemCo2DTutorial",
         "GGemCo2DCoreEditor"

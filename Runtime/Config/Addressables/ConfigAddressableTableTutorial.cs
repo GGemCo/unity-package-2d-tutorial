@@ -8,7 +8,10 @@ namespace GGemCo2DTutorial
     /// </summary>
     public static class ConfigAddressableTableTutorial
     {
-        private const string PackageId = "tutorial";
+        /// <summary>
+        /// Tutorial 런타임 테이블 팩 식별자입니다.
+        /// </summary>
+        public const string PackageId = "tutorial";
 
         /// <summary>
         /// Tutorial Catalog 역할을 수행하는 테이블 이름입니다.

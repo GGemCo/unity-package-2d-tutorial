@@ -25,6 +25,9 @@ namespace GGemCo2DTutorialEditor
             /// <summary>기본 셋팅 메뉴 섹션의 시작 위치입니다.</summary>
             DefaultSetting,
 
+            /// <summary>Addressables 셋팅 메뉴의 위치입니다.</summary>
+            SettingAddressable,
+
             /// <summary>개발 도구 메뉴 섹션의 시작 위치입니다.</summary>
             Development = 100,
             CreateTutorial,
