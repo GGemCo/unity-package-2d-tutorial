@@ -44,19 +44,6 @@ namespace GGemCo2DTutorial
         }
 
         /// <summary>
-        /// Catalog JSON Addressables 키로 Catalog를 로드하고 게임 이벤트 구독을 시작합니다.
-        /// </summary>
-        /// <param name="catalogKey">Catalog TextAsset의 Addressables 키입니다.</param>
-        /// <returns>초기화에 성공하면 true입니다.</returns>
-        public Task<bool> InitializeAsync(string catalogKey)
-        {
-            ITutorialCatalogProvider provider = new AddressableTutorialCatalogProvider(
-                _repository,
-                catalogKey);
-            return InitializeAsync(provider);
-        }
-
-        /// <summary>
         /// 지정한 Catalog 공급자에서 Catalog를 로드하고 게임 이벤트 구독을 시작합니다.
         /// </summary>
         /// <param name="catalogProvider">Catalog를 공급할 Provider입니다.</param>

@@ -10,7 +10,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 namespace GGemCo2DTutorial
 {
     /// <summary>
-    /// Tutorial Catalog와 개별 Tutorial JSON을 Addressables에서 로드하고 정의를 캐시합니다.
+    /// 개별 Tutorial JSON을 Addressables에서 로드하고 정의를 캐시합니다.
     /// </summary>
     public sealed class TutorialAddressableRepository : IDisposable
     {
@@ -19,16 +19,6 @@ namespace GGemCo2DTutorial
         private readonly Dictionary<int, Task<TutorialDefinition>> _loadingTasks =
             new Dictionary<int, Task<TutorialDefinition>>();
         private bool _isDisposed;
-
-        /// <summary>
-        /// Tutorial Catalog JSON을 로드합니다.
-        /// </summary>
-        /// <param name="catalogKey">Catalog TextAsset의 Addressables 키입니다.</param>
-        /// <returns>파싱된 Catalog이며 실패 시 null입니다.</returns>
-        public Task<TutorialCatalog> LoadCatalogAsync(string catalogKey)
-        {
-            return LoadTextAssetAsync<TutorialCatalog>(catalogKey, "Tutorial Catalog");
-        }
 
         /// <summary>
         /// 개별 Tutorial JSON을 중복 요청 없이 로드하고 캐시합니다.

@@ -112,11 +112,6 @@ namespace GGemCo2DTutorialEditor
                         ExportCurrentTutorialJson();
                     }
 
-                    if (GUILayout.Button("Catalog Export", EditorStyles.toolbarButton, GUILayout.Width(105f)))
-                    {
-                        ExportCurrentCatalogJson();
-                    }
-
                 }
 
                 GUILayout.FlexibleSpace();

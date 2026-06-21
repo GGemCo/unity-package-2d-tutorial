@@ -9,10 +9,6 @@ namespace GGemCo2DTutorial
     /// </summary>
     public sealed class TutorialPackageManager : MonoBehaviour
     {
-        [SerializeField]
-        [Tooltip("Tutorial Catalog TextAsset의 Addressables 키입니다.")]
-        private string catalogAddressableKey = TutorialConstants.DefaultCatalogKey;
-
         /// <summary>
         /// 현재 게임에서 사용하는 Tutorial 패키지 매니저입니다.
         /// </summary>
@@ -34,8 +30,7 @@ namespace GGemCo2DTutorial
         private SceneGame _sceneGame;
 
         /// <summary>
-        /// 씬에 Tutorial 패키지 매니저가 없으면 기본 설정으로 자동 생성합니다.
-        /// 씬에 직접 배치한 인스턴스가 있으면 해당 인스턴스의 Catalog 키를 우선 사용합니다.
+        /// 씬에 Tutorial 패키지 매니저가 없으면 자동 생성합니다.
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void EnsureInstance()
@@ -92,32 +87,25 @@ namespace GGemCo2DTutorial
 
             TutorialManager = new TutorialManager(TutorialData);
             ITutorialCatalogProvider tableCatalogProvider = CreateTableCatalogProvider();
-            var initializeTask = tableCatalogProvider != null
-                ? TutorialManager.InitializeAsync(tableCatalogProvider)
-                : TutorialManager.InitializeAsync(catalogAddressableKey);
+            if (tableCatalogProvider == null)
+            {
+                GcLogger.LogError(
+                    "Tutorial Runtime 초기화에 실패했습니다. 로드된 tutorial 테이블 데이터가 없습니다.");
+                Destroy(gameObject);
+                yield break;
+            }
+
+            var initializeTask = TutorialManager.InitializeAsync(tableCatalogProvider);
             while (!initializeTask.IsCompleted)
             {
                 yield return null;
-            }
-
-            if ((initializeTask.IsCanceled || initializeTask.IsFaulted || !initializeTask.Result) &&
-                tableCatalogProvider != null)
-            {
-                GcLogger.LogWarning(
-                    "TableTutorial 기반 초기화에 실패하여 기존 Catalog JSON 로딩으로 전환합니다.");
-                initializeTask = TutorialManager.InitializeAsync(catalogAddressableKey);
-                while (!initializeTask.IsCompleted)
-                {
-                    yield return null;
-                }
             }
 
             if (initializeTask.IsCanceled ||
                 initializeTask.IsFaulted ||
                 !initializeTask.Result)
             {
-                GcLogger.LogError(
-                    $"Tutorial Runtime 초기화에 실패했습니다. catalogKey: {catalogAddressableKey}");
+                GcLogger.LogError("Tutorial Runtime 초기화에 실패했습니다. tutorial 테이블을 확인하십시오.");
                 Destroy(gameObject);
                 yield break;
             }
