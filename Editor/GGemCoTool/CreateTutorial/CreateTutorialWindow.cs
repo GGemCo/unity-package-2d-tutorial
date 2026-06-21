@@ -1,3 +1,4 @@
+using GGemCo2DTutorial;
 using UnityEditor;
 using UnityEngine;
 
@@ -27,6 +28,13 @@ namespace GGemCo2DTutorialEditor
         private string _addressablesGroupName = TutorialAddressableRegisterUtility.DefaultGroupName;
         private string _definitionLabel = TutorialAddressableRegisterUtility.DefaultDefinitionLabel;
         private string _catalogLabel = TutorialAddressableRegisterUtility.DefaultCatalogLabel;
+        private int _playModeStartStepIndex;
+        private TutorialEventType _playModeEventType = TutorialEventType.InputAction;
+        private string _playModeEventKey = string.Empty;
+        private int _playModeEventIntValue;
+        private int _playModeEventAmount = 1;
+        private string _playModeInputActionId = string.Empty;
+        private Vector2 _playModeLogScrollPosition;
 
         /// <summary>
         /// 튜토리얼 제작 창을 엽니다.
@@ -43,6 +51,16 @@ namespace GGemCo2DTutorialEditor
         private void OnEnable()
         {
             RestoreLastAsset();
+            EditorApplication.playModeStateChanged -= HandlePlayModeStateChanged;
+            EditorApplication.playModeStateChanged += HandlePlayModeStateChanged;
+        }
+
+        /// <summary>
+        /// EditorWindow가 비활성화될 때 플레이 모드 상태 변경 구독을 해제합니다.
+        /// </summary>
+        private void OnDisable()
+        {
+            EditorApplication.playModeStateChanged -= HandlePlayModeStateChanged;
         }
 
         /// <summary>
@@ -166,6 +184,8 @@ namespace GGemCo2DTutorialEditor
                 DrawValidationPanel();
                 EditorGUILayout.Space(8f);
                 DrawAddressablesPanel();
+                EditorGUILayout.Space(8f);
+                DrawPlayModeTestPanel();
 
                 EditorGUILayout.EndScrollView();
                 ApplyModifiedProperties();
@@ -351,6 +371,14 @@ namespace GGemCo2DTutorialEditor
             {
                 EditorPrefs.SetString(LastAssetGuidEditorPrefsKey, guid);
             }
+        }
+
+        /// <summary>
+        /// 플레이 모드 상태가 바뀔 때 테스트 패널 상태를 다시 그립니다.
+        /// </summary>
+        private void HandlePlayModeStateChanged(PlayModeStateChange state)
+        {
+            Repaint();
         }
 
         /// <summary>
