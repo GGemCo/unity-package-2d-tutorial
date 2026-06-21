@@ -22,6 +22,11 @@ namespace GGemCo2DTutorialEditor
         private string _statusMessage = "Tutorial Authoring Asset을 선택하거나 새로 생성하십시오.";
         private MessageType _statusType = MessageType.Info;
         private TutorialAuthoringValidationResult _lastValidationResult;
+        private string _lastDefinitionJsonPath;
+        private string _lastCatalogJsonPath;
+        private string _addressablesGroupName = TutorialAddressableRegisterUtility.DefaultGroupName;
+        private string _definitionLabel = TutorialAddressableRegisterUtility.DefaultDefinitionLabel;
+        private string _catalogLabel = TutorialAddressableRegisterUtility.DefaultCatalogLabel;
 
         /// <summary>
         /// 튜토리얼 제작 창을 엽니다.
@@ -159,6 +164,8 @@ namespace GGemCo2DTutorialEditor
                 DrawStartConditionProperty();
                 EditorGUILayout.Space(8f);
                 DrawValidationPanel();
+                EditorGUILayout.Space(8f);
+                DrawAddressablesPanel();
 
                 EditorGUILayout.EndScrollView();
                 ApplyModifiedProperties();

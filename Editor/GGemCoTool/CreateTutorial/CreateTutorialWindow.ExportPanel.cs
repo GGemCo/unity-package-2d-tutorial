@@ -43,6 +43,11 @@ namespace GGemCo2DTutorialEditor
             }
 
             TutorialExportResult result = TutorialJsonExporter.ExportDefinition(_asset, path);
+            if (result.Succeeded)
+            {
+                _lastDefinitionJsonPath = result.AssetPath;
+            }
+
             ApplyExportResult(result);
         }
 
@@ -92,6 +97,11 @@ namespace GGemCo2DTutorialEditor
             }
 
             TutorialExportResult result = TutorialCatalogExporter.ExportCatalog(assets, path);
+            if (result.Succeeded)
+            {
+                _lastCatalogJsonPath = result.AssetPath;
+            }
+
             ApplyExportResult(result);
         }
 
