@@ -96,6 +96,16 @@ namespace GGemCo2DTutorialEditor
                     {
                         PingCurrentAsset();
                     }
+
+                    if (GUILayout.Button("JSON Export", EditorStyles.toolbarButton, GUILayout.Width(90f)))
+                    {
+                        ExportCurrentTutorialJson();
+                    }
+
+                    if (GUILayout.Button("Catalog Export", EditorStyles.toolbarButton, GUILayout.Width(105f)))
+                    {
+                        ExportCurrentCatalogJson();
+                    }
                 }
 
                 GUILayout.FlexibleSpace();
