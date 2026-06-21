@@ -74,10 +74,10 @@ namespace GGemCo2DTutorialEditor
                 TutorialAuthoringAsset existingAsset = FindAuthoringAsset(_selectedTutorialUid);
                 if (selectedRow != null)
                 {
-                    string assetState = existingAsset != null
-                        ? $"제작 데이터 있음: {AssetDatabase.GetAssetPath(existingAsset)}"
-                        : "제작 데이터 없음";
-                    EditorGUILayout.HelpBox(assetState, existingAsset != null ? MessageType.Info : MessageType.Warning);
+                    // string assetState = existingAsset != null
+                    //     ? $"제작 데이터 있음: {AssetDatabase.GetAssetPath(existingAsset)}"
+                    //     : "제작 데이터 없음";
+                    // EditorGUILayout.HelpBox(assetState, existingAsset != null ? MessageType.Info : MessageType.Warning);
                 }
 
                 using (new EditorGUI.DisabledScope(selectedRow == null || existingAsset != null))

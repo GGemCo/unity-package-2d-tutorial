@@ -10,33 +10,11 @@ namespace GGemCo2DTutorialEditor
     /// </summary>
     internal static class TutorialAuthoringNamingUtility
     {
-        private const string DefaultDirectory = "Assets";
+        private const string AuthoringAssetDirectory = "Assets/Editor/Tutorials";
+        private const string ExportJsonDirectory = "Assets/GGemCo/DataAddressable/Tutorials";
         private const string AuthoringFilePrefix = "TutorialAuthoring_";
         private const string AuthoringFileExtension = ".asset";
-
-        /// <summary>
-        /// 프로젝트에 존재하는 제작 데이터 중 가장 큰 UID 다음 값을 계산합니다.
-        /// </summary>
-        /// <returns>새 제작 데이터에 사용할 수 있는 UID입니다.</returns>
-        public static int GetNextAvailableUid()
-        {
-            int maxUid = 0;
-            string[] guids = AssetDatabase.FindAssets("t:TutorialAuthoringAsset");
-            if (guids != null)
-            {
-                for (int i = 0; i < guids.Length; i++)
-                {
-                    string path = AssetDatabase.GUIDToAssetPath(guids[i]);
-                    TutorialAuthoringAsset asset = AssetDatabase.LoadAssetAtPath<TutorialAuthoringAsset>(path);
-                    if (asset != null && asset.Uid > maxUid)
-                    {
-                        maxUid = asset.Uid;
-                    }
-                }
-            }
-
-            return maxUid + 1;
-        }
+        private const string CatalogFileName = "tutorial_catalog.json";
 
         /// <summary>
         /// 지정한 UID에 대응되는 TutorialAuthoringAsset 파일명을 반환합니다.
@@ -70,39 +48,60 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// 현재 프로젝트 창 선택을 기준으로 새 제작 데이터 저장 폴더를 계산합니다.
+        /// 지정한 UID에 대응되는 Tutorial JSON의 프로젝트 상대 경로를 반환합니다.
         /// </summary>
-        /// <returns>Unity 프로젝트 상대 폴더 경로입니다.</returns>
-        public static string GetSelectedFolderOrDefault()
+        /// <param name="uid">Tutorial UID입니다.</param>
+        /// <returns>고정 Export 폴더가 적용된 JSON 에셋 경로입니다.</returns>
+        public static string GetDefinitionJsonAssetPath(int uid)
         {
-            string selectedPath = AssetDatabase.GetAssetPath(Selection.activeObject);
-            if (string.IsNullOrWhiteSpace(selectedPath))
-            {
-                return DefaultDirectory;
-            }
-
-            string normalizedPath = selectedPath.Replace('\\', '/');
-            if (AssetDatabase.IsValidFolder(normalizedPath))
-            {
-                return normalizedPath;
-            }
-
-            string directory = Path.GetDirectoryName(normalizedPath)?.Replace('\\', '/');
-            return !string.IsNullOrWhiteSpace(directory) && AssetDatabase.IsValidFolder(directory)
-                ? directory
-                : DefaultDirectory;
+            return $"{ExportJsonDirectory}/{GetDefinitionFileName(uid)}";
         }
 
         /// <summary>
-        /// 새 TutorialAuthoringAsset을 저장할 프로젝트 상대 경로를 생성합니다.
+        /// Tutorial Catalog JSON의 프로젝트 상대 경로를 반환합니다.
+        /// </summary>
+        /// <returns>고정 Export 폴더가 적용된 Catalog JSON 에셋 경로입니다.</returns>
+        public static string GetCatalogJsonAssetPath()
+        {
+            return $"{ExportJsonDirectory}/{CatalogFileName}";
+        }
+
+        /// <summary>
+        /// 고정 제작 폴더에 새 TutorialAuthoringAsset을 저장할 프로젝트 상대 경로를 생성합니다.
         /// </summary>
         /// <param name="uid">Tutorial UID입니다.</param>
         /// <returns>중복이 보정된 Unity 프로젝트 상대 에셋 경로입니다.</returns>
         public static string BuildUniqueAuthoringAssetPath(int uid)
         {
-            string directory = GetSelectedFolderOrDefault();
+            EnsureAssetFolder(AuthoringAssetDirectory);
             string fileName = GetAuthoringAssetFileName(uid);
-            return AssetDatabase.GenerateUniqueAssetPath($"{directory}/{fileName}");
+            return AssetDatabase.GenerateUniqueAssetPath($"{AuthoringAssetDirectory}/{fileName}");
+        }
+
+        /// <summary>
+        /// Unity AssetDatabase에 지정한 폴더와 누락된 상위 폴더를 순서대로 생성합니다.
+        /// </summary>
+        /// <param name="folderPath">생성할 Unity 프로젝트 상대 폴더 경로입니다.</param>
+        private static void EnsureAssetFolder(string folderPath)
+        {
+            string normalizedPath = folderPath.Replace('\\', '/').TrimEnd('/');
+            if (AssetDatabase.IsValidFolder(normalizedPath))
+            {
+                return;
+            }
+
+            string parentPath = Path.GetDirectoryName(normalizedPath)?.Replace('\\', '/');
+            string folderName = Path.GetFileName(normalizedPath);
+            if (string.IsNullOrWhiteSpace(parentPath) || string.IsNullOrWhiteSpace(folderName))
+            {
+                return;
+            }
+
+            EnsureAssetFolder(parentPath);
+            if (!AssetDatabase.IsValidFolder(normalizedPath))
+            {
+                AssetDatabase.CreateFolder(parentPath, folderName);
+            }
         }
     }
 }

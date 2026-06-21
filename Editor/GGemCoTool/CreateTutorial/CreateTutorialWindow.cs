@@ -23,13 +23,6 @@ namespace GGemCo2DTutorialEditor
         private string _statusMessage = "Tutorial Authoring Asset을 선택하거나 새로 생성하십시오.";
         private MessageType _statusType = MessageType.Info;
         private TutorialAuthoringValidationResult _lastValidationResult;
-        private string _lastDefinitionJsonPath;
-        private string _lastCatalogJsonPath;
-        private string _lastTableTutorialPath;
-        private string _addressablesGroupName = TutorialAddressableRegisterUtility.DefaultGroupName;
-        private string _definitionLabel = TutorialAddressableRegisterUtility.DefaultDefinitionLabel;
-        private string _catalogLabel = TutorialAddressableRegisterUtility.DefaultCatalogLabel;
-        private string _tableLabel = TutorialAddressableRegisterUtility.DefaultTableLabel;
         private int _playModeStartStepIndex;
         private TutorialEventType _playModeEventType = TutorialEventType.InputAction;
         private string _playModeEventKey = string.Empty;
@@ -102,26 +95,11 @@ namespace GGemCo2DTutorialEditor
             {
                 EditorGUILayout.LabelField(WindowTitle, EditorStyles.boldLabel, GUILayout.Width(160f));
 
-                if (GUILayout.Button("새 제작 데이터", EditorStyles.toolbarButton, GUILayout.Width(100f)))
-                {
-                    CreateNewAuthoringAsset();
-                }
-
-                if (GUILayout.Button("선택 에셋 사용", EditorStyles.toolbarButton, GUILayout.Width(100f)))
-                {
-                    UseSelectedAuthoringAsset();
-                }
-
                 using (new EditorGUI.DisabledScope(_asset == null))
                 {
                     if (GUILayout.Button("기본값 보정", EditorStyles.toolbarButton, GUILayout.Width(90f)))
                     {
                         NormalizeAsset();
-                    }
-
-                    if (GUILayout.Button("프로젝트에서 찾기", EditorStyles.toolbarButton, GUILayout.Width(110f)))
-                    {
-                        PingCurrentAsset();
                     }
 
                     if (GUILayout.Button("검증", EditorStyles.toolbarButton, GUILayout.Width(55f)))
@@ -139,10 +117,6 @@ namespace GGemCo2DTutorialEditor
                         ExportCurrentCatalogJson();
                     }
 
-                    if (GUILayout.Button("Table Export", EditorStyles.toolbarButton, GUILayout.Width(95f)))
-                    {
-                        ExportCurrentTableTutorial();
-                    }
                 }
 
                 GUILayout.FlexibleSpace();
@@ -180,19 +154,17 @@ namespace GGemCo2DTutorialEditor
                 _serializedAsset.Update();
                 _leftScrollPosition = EditorGUILayout.BeginScrollView(_leftScrollPosition);
 
-                DrawProperty("uid", "UID");
-                DrawProperty("title", "제목");
-                DrawProperty("category", "카테고리");
-                DrawProperty("memo", "제작 메모");
-                DrawProperty("repeatable", "반복 실행");
-                DrawGeneratedNamingInfo();
+                // DrawProperty("uid", "UID");
+                // DrawProperty("title", "제목");
+                // DrawProperty("category", "카테고리");
+                // DrawProperty("memo", "제작 메모");
+                // DrawProperty("repeatable", "반복 실행");
+                // DrawGeneratedNamingInfo();
 
                 EditorGUILayout.Space(8f);
                 DrawStartConditionProperty();
                 EditorGUILayout.Space(8f);
                 DrawValidationPanel();
-                EditorGUILayout.Space(8f);
-                DrawAddressablesPanel();
                 EditorGUILayout.Space(8f);
                 DrawPlayModeTestPanel();
 
@@ -306,44 +278,6 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// 새 TutorialAuthoringAsset을 생성하고 프로젝트에 저장합니다.
-        /// </summary>
-        private void CreateNewAuthoringAsset()
-        {
-            int uid = TutorialAuthoringNamingUtility.GetNextAvailableUid();
-            string path = TutorialAuthoringNamingUtility.BuildUniqueAuthoringAssetPath(uid);
-
-            TutorialAuthoringAsset newAsset = CreateInstance<TutorialAuthoringAsset>();
-            newAsset.Uid = uid;
-            newAsset.Title = $"Tutorial {uid}";
-            newAsset.EnsureDefaults();
-
-            AssetDatabase.CreateAsset(newAsset, path);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            SetAsset(newAsset);
-            Selection.activeObject = newAsset;
-            EditorGUIUtility.PingObject(newAsset);
-            _statusMessage = $"새 제작 데이터를 생성했습니다: {path}";
-            _statusType = MessageType.Info;
-        }
-
-        /// <summary>
-        /// 현재 Unity Selection에 있는 TutorialAuthoringAsset을 편집 대상으로 사용합니다.
-        /// </summary>
-        private void UseSelectedAuthoringAsset()
-        {
-            if (Selection.activeObject is TutorialAuthoringAsset selectedAsset)
-            {
-                SetAsset(selectedAsset);
-                return;
-            }
-
-            _statusMessage = "현재 선택된 오브젝트가 TutorialAuthoringAsset이 아닙니다.";
-            _statusType = MessageType.Warning;
-        }
-
-        /// <summary>
         /// 현재 제작 데이터의 기본값을 보정하고 저장 대상으로 표시합니다.
         /// </summary>
         private void NormalizeAsset()
@@ -360,20 +294,6 @@ namespace GGemCo2DTutorialEditor
             MarkAssetDirty();
             _statusMessage = "제작 데이터 기본값을 보정했습니다.";
             _statusType = MessageType.Info;
-        }
-
-        /// <summary>
-        /// 현재 제작 데이터를 프로젝트 창에서 강조합니다.
-        /// </summary>
-        private void PingCurrentAsset()
-        {
-            if (_asset == null)
-            {
-                return;
-            }
-
-            EditorGUIUtility.PingObject(_asset);
-            Selection.activeObject = _asset;
         }
 
         /// <summary>

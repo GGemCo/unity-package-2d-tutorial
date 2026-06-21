@@ -32,22 +32,8 @@ namespace GGemCo2DTutorialEditor
                 return;
             }
 
-            string path = EditorUtility.SaveFilePanelInProject(
-                "Tutorial JSON Export",
-                TutorialJsonExporter.GetDefaultDefinitionFileName(_asset),
-                "json",
-                "현재 제작 데이터를 저장할 Tutorial JSON 경로를 선택하십시오.");
-            if (string.IsNullOrEmpty(path))
-            {
-                return;
-            }
-
+            string path = TutorialAuthoringNamingUtility.GetDefinitionJsonAssetPath(_asset.Uid);
             TutorialExportResult result = TutorialJsonExporter.ExportDefinition(_asset, path);
-            if (result.Succeeded)
-            {
-                _lastDefinitionJsonPath = result.AssetPath;
-            }
-
             ApplyExportResult(result);
         }
 
@@ -86,22 +72,8 @@ namespace GGemCo2DTutorialEditor
                 return;
             }
 
-            string path = EditorUtility.SaveFilePanelInProject(
-                "Tutorial Catalog JSON Export",
-                TutorialCatalogExporter.GetDefaultCatalogFileName(),
-                "json",
-                "선택된 TutorialAuthoringAsset 목록을 저장할 Catalog JSON 경로를 선택하십시오.");
-            if (string.IsNullOrEmpty(path))
-            {
-                return;
-            }
-
+            string path = TutorialAuthoringNamingUtility.GetCatalogJsonAssetPath();
             TutorialExportResult result = TutorialCatalogExporter.ExportCatalog(assets, path);
-            if (result.Succeeded)
-            {
-                _lastCatalogJsonPath = result.AssetPath;
-            }
-
             ApplyExportResult(result);
         }
 
