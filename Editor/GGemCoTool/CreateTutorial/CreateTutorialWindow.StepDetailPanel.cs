@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -78,8 +79,9 @@ namespace GGemCo2DTutorialEditor
                     conditionsProperty,
                     conditionProperty,
                     i,
-                    $"조건 {i + 1}",
-                    ResetConditionProperty);
+                    TutorialConditionDrawerFactory.BuildTitle(conditionProperty, i),
+                    ResetConditionProperty,
+                    TutorialConditionDrawerFactory.Draw);
             }
         }
 
@@ -103,8 +105,9 @@ namespace GGemCo2DTutorialEditor
                     actionsProperty,
                     actionProperty,
                     i,
-                    $"액션 {i + 1}",
-                    ResetActionProperty);
+                    TutorialActionDrawerFactory.BuildTitle(actionProperty, i),
+                    ResetActionProperty,
+                    TutorialActionDrawerFactory.Draw);
             }
         }
 
@@ -114,7 +117,7 @@ namespace GGemCo2DTutorialEditor
         /// <param name="title">목록 제목입니다.</param>
         /// <param name="arrayProperty">배열 SerializedProperty입니다.</param>
         /// <param name="onAdd">추가 버튼을 눌렀을 때 실행할 동작입니다.</param>
-        private static void DrawListHeader(string title, SerializedProperty arrayProperty, System.Action onAdd)
+        private static void DrawListHeader(string title, SerializedProperty arrayProperty, Action onAdd)
         {
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -135,12 +138,14 @@ namespace GGemCo2DTutorialEditor
         /// <param name="index">항목 인덱스입니다.</param>
         /// <param name="label">항목 제목입니다.</param>
         /// <param name="resetAction">항목 초기화 함수입니다.</param>
+        /// <param name="drawContent">항목 상세 Drawer입니다.</param>
         private void DrawArrayElement(
             SerializedProperty arrayProperty,
             SerializedProperty elementProperty,
             int index,
             string label,
-            System.Action<SerializedProperty> resetAction)
+            Action<SerializedProperty> resetAction,
+            Action<SerializedProperty> drawContent)
         {
             using (new EditorGUILayout.VerticalScope(GUI.skin.box))
             {
@@ -170,7 +175,14 @@ namespace GGemCo2DTutorialEditor
                 if (elementProperty.isExpanded)
                 {
                     EditorGUI.indentLevel++;
-                    EditorGUILayout.PropertyField(elementProperty, GUIContent.none, true);
+                    if (drawContent != null)
+                    {
+                        drawContent(elementProperty);
+                    }
+                    else
+                    {
+                        EditorGUILayout.PropertyField(elementProperty, GUIContent.none, true);
+                    }
                     EditorGUI.indentLevel--;
                 }
             }
