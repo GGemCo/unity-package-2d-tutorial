@@ -144,7 +144,7 @@ namespace GGemCo2DTutorial
                 return null;
             }
 
-            string addressableKey = TutorialAddressableKeyUtility.GetDefinitionAddressableKey(row.Uid);
+            string addressableKey = ConfigAddressableKeyTutorial.GetDefinitionAddressableKey(row.Uid);
             if (string.IsNullOrWhiteSpace(addressableKey))
             {
                 return null;

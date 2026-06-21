@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GGemCo2DCore;
@@ -15,39 +14,6 @@ namespace GGemCo2DTutorial
         /// </summary>
         /// <returns>로드된 Catalog입니다. 실패 시 null입니다.</returns>
         Task<TutorialCatalog> LoadCatalogAsync();
-    }
-
-    /// <summary>
-    /// 기존 Catalog JSON Addressables 키를 통해 Catalog를 공급합니다.
-    /// </summary>
-    public sealed class AddressableTutorialCatalogProvider : ITutorialCatalogProvider
-    {
-        private readonly TutorialAddressableRepository _repository;
-        private readonly string _catalogKey;
-
-        /// <summary>
-        /// Addressables 기반 Catalog 공급자를 생성합니다.
-        /// </summary>
-        /// <param name="repository">Catalog JSON 로드에 사용할 저장소입니다.</param>
-        /// <param name="catalogKey">Catalog TextAsset Addressables 키입니다.</param>
-        public AddressableTutorialCatalogProvider(
-            TutorialAddressableRepository repository,
-            string catalogKey)
-        {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _catalogKey = string.IsNullOrWhiteSpace(catalogKey)
-                ? TutorialConstants.DefaultCatalogKey
-                : catalogKey.Trim();
-        }
-
-        /// <summary>
-        /// Addressables에서 Catalog JSON을 로드합니다.
-        /// </summary>
-        /// <returns>로드된 Catalog입니다.</returns>
-        public Task<TutorialCatalog> LoadCatalogAsync()
-        {
-            return _repository.LoadCatalogAsync(_catalogKey);
-        }
     }
 
     /// <summary>

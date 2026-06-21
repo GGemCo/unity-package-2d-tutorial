@@ -5,14 +5,13 @@ using UnityEngine;
 namespace GGemCo2DTutorialEditor
 {
     /// <summary>
-    /// Tutorial 테이블과 설정 ScriptableObject를 Addressables에 등록하는 에디터 창입니다.
+    /// Tutorial 테이블을 Addressables에 등록하는 에디터 창입니다.
     /// </summary>
     public sealed class AddressableEditorTutorial : DefaultEditorWindow
     {
         private const string Title = "Addressable 셋팅하기";
 
         private SettingTableTutorial _settingTableTutorial;
-        private SettingScriptableObjectTutorial _settingScriptableObjectTutorial;
         private Vector2 _scrollPosition;
 
         /// <summary>
@@ -45,7 +44,6 @@ namespace GGemCo2DTutorialEditor
             base.OnEnable();
 
             ButtonHeight = 40f;
-            _settingScriptableObjectTutorial = new SettingScriptableObjectTutorial(this);
             _settingTableTutorial = new SettingTableTutorial(this);
         }
 
@@ -62,7 +60,6 @@ namespace GGemCo2DTutorialEditor
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    _settingScriptableObjectTutorial?.OnGUI();
                     _settingTableTutorial?.OnGUI();
                 }
 

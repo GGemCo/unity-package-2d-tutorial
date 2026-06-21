@@ -18,14 +18,13 @@ TimingBattle 타입을 직접 참조하지 않습니다.
 - `TutorialPackageManager`
   - Core 게임 씬 준비를 기다린 뒤 저장 데이터와 실행 매니저를 생성합니다.
   - Core 이벤트 Adapter의 구독과 해제를 관리합니다.
-  - 씬 로드 후 인스턴스가 없으면 기본 Catalog 키로 자동 생성됩니다.
-  - 다른 Catalog 키가 필요하면 씬에 컴포넌트를 직접 배치해 값을 재정의합니다.
+  - 씬 로드 후 인스턴스가 없으면 자동 생성됩니다.
 - `TutorialManager`
   - Catalog 로딩, 자동 시작 조건, 활성 Tutorial과 저장 상태를 조정합니다.
 - `TutorialStepRunner`
   - 현재 단계 조건 진행, 진입 액션, 종료 액션과 단계 전환을 처리합니다.
 - `TutorialAddressableRepository`
-  - Catalog와 개별 JSON을 지연 로드하고 중복 요청을 합칩니다.
+  - 개별 Tutorial JSON을 지연 로드하고 중복 요청을 합칩니다.
   - TextAsset 파싱 후 Addressables 핸들을 즉시 해제합니다.
 - `TutorialData`
   - Core `SaveRegistry`의 `tutorial.progress` 확장 섹션을 사용합니다.
@@ -81,8 +80,8 @@ TutorialPackageManager.Instance?.TutorialManager?.InputBlockPolicy.IsBlocked(act
 
 ## Addressables 키
 
-- Catalog 기본 키: `Tutorial/tutorial_catalog`
-- 개별 Tutorial 키: Catalog의 `addressableKey`
+- Tutorial 목록과 자동 시작 조건은 `tutorial.txt` 테이블에서 로드합니다.
+- 개별 Tutorial JSON 키는 UID 규칙에 따라 `Tutorial/tutorial_{uid}` 형식으로 계산합니다.
 
 샘플 JSON은 `Samples~/DataAddressable/Tutorials`에 있습니다. 프로젝트로 가져온 뒤
 각 TextAsset을 위 키로 Addressables에 등록해야 합니다.

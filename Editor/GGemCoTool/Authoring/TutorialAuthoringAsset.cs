@@ -59,16 +59,6 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// 제작 툴에서 분류와 검색에 사용할 카테고리입니다.
-        /// 런타임 JSON으로는 내보내지 않습니다.
-        /// </summary>
-        public string Category
-        {
-            get => category;
-            set => category = value;
-        }
-
-        /// <summary>
         /// 제작자가 남기는 튜토리얼 설명 메모입니다.
         /// 런타임 JSON으로는 내보내지 않습니다.
         /// </summary>
@@ -88,21 +78,12 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// UID 규칙으로 계산한 Tutorial JSON Addressables 키입니다.
-        /// </summary>
-        public string AddressableKey
-        {
-            get => TutorialAddressableKeyUtility.GetDefinitionAddressableKey(uid);
-            set => exportFileName = TutorialAddressableKeyUtility.GetDefinitionFileName(uid);
-        }
-
-        /// <summary>
         /// UID 규칙으로 계산한 Tutorial JSON 파일명입니다.
         /// </summary>
         public string ExportFileName
         {
-            get => TutorialAddressableKeyUtility.GetDefinitionFileName(uid);
-            set => exportFileName = TutorialAddressableKeyUtility.GetDefinitionFileName(uid);
+            get => ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
+            set => exportFileName = ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
         }
 
         /// <summary>
@@ -145,24 +126,6 @@ namespace GGemCo2DTutorialEditor
             }
 
             return definition;
-        }
-
-        /// <summary>
-        /// 현재 제작 데이터를 런타임 Tutorial Catalog Entry DTO로 변환합니다.
-        /// </summary>
-        /// <returns>Catalog JSON에 저장할 튜토리얼 항목입니다.</returns>
-        public TutorialCatalogEntry ToCatalogEntry()
-        {
-            EnsureDefaults();
-            return new TutorialCatalogEntry
-            {
-                uid = uid,
-                addressableKey = TutorialAddressableKeyUtility.GetDefinitionAddressableKey(uid),
-                repeatable = repeatable,
-                startCondition = startCondition != null && startCondition.Type != TutorialEventType.None
-                    ? startCondition.ToRuntimeDefinition()
-                    : null,
-            };
         }
 
         /// <summary>
@@ -215,7 +178,7 @@ namespace GGemCo2DTutorialEditor
 
             if (uid > 0)
             {
-                exportFileName = TutorialAddressableKeyUtility.GetDefinitionFileName(uid);
+                exportFileName = ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
             }
         }
 

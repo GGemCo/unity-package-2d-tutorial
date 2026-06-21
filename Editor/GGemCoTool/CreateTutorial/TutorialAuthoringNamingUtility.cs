@@ -14,7 +14,6 @@ namespace GGemCo2DTutorialEditor
         private const string ExportJsonDirectory = "Assets/GGemCo/DataAddressable/Tutorials";
         private const string AuthoringFilePrefix = "TutorialAuthoring_";
         private const string AuthoringFileExtension = ".asset";
-        private const string CatalogFileName = "tutorial_catalog.json";
 
         /// <summary>
         /// 지정한 UID에 대응되는 TutorialAuthoringAsset 파일명을 반환합니다.
@@ -34,7 +33,7 @@ namespace GGemCo2DTutorialEditor
         /// <returns>규칙 기반 Tutorial JSON 파일명입니다.</returns>
         public static string GetDefinitionFileName(int uid)
         {
-            return TutorialAddressableKeyUtility.GetDefinitionFileName(uid);
+            return ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
         }
 
         /// <summary>
@@ -44,7 +43,7 @@ namespace GGemCo2DTutorialEditor
         /// <returns>규칙 기반 Addressables 주소입니다.</returns>
         public static string GetDefinitionAddressableKey(int uid)
         {
-            return TutorialAddressableKeyUtility.GetDefinitionAddressableKey(uid);
+            return ConfigAddressableKeyTutorial.GetDefinitionAddressableKey(uid);
         }
 
         /// <summary>
@@ -55,15 +54,6 @@ namespace GGemCo2DTutorialEditor
         public static string GetDefinitionJsonAssetPath(int uid)
         {
             return $"{ExportJsonDirectory}/{GetDefinitionFileName(uid)}";
-        }
-
-        /// <summary>
-        /// Tutorial Catalog JSON의 프로젝트 상대 경로를 반환합니다.
-        /// </summary>
-        /// <returns>고정 Export 폴더가 적용된 Catalog JSON 에셋 경로입니다.</returns>
-        public static string GetCatalogJsonAssetPath()
-        {
-            return $"{ExportJsonDirectory}/{CatalogFileName}";
         }
 
         /// <summary>

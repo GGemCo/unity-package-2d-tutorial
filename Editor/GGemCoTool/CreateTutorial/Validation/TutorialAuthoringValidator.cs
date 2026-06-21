@@ -13,11 +13,8 @@ namespace GGemCo2DTutorialEditor
         /// 개별 Tutorial 제작 데이터의 Export 가능 여부와 제작 흐름 위험 요소를 검증합니다.
         /// </summary>
         /// <param name="asset">검증할 제작 데이터입니다.</param>
-        /// <param name="requireCatalogFields">Catalog Export에 필요한 필드를 오류로 검사할지 여부입니다.</param>
         /// <returns>검증 결과입니다.</returns>
-        public static TutorialAuthoringValidationResult Validate(
-            TutorialAuthoringAsset asset,
-            bool requireCatalogFields = false)
+        public static TutorialAuthoringValidationResult Validate(TutorialAuthoringAsset asset)
         {
             TutorialAuthoringValidationResult result = new TutorialAuthoringValidationResult();
             if (asset == null)
@@ -27,7 +24,7 @@ namespace GGemCo2DTutorialEditor
             }
 
             asset.EnsureDefaults();
-            ValidateRoot(asset, result, requireCatalogFields);
+            ValidateRoot(asset, result);
             ValidateStartCondition(asset.StartCondition, result);
             ValidateSteps(asset.Steps, result);
             ValidateRuntimeDefinition(asset, result);
@@ -36,60 +33,13 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// 여러 제작 데이터를 Catalog 기준으로 검증합니다.
-        /// </summary>
-        /// <param name="assets">검증할 제작 데이터 목록입니다.</param>
-        /// <returns>Catalog Export용 검증 결과입니다.</returns>
-        public static TutorialAuthoringValidationResult ValidateCatalog(IReadOnlyList<TutorialAuthoringAsset> assets)
-        {
-            TutorialAuthoringValidationResult result = new TutorialAuthoringValidationResult();
-            if (assets == null || assets.Count <= 0)
-            {
-                result.AddError("Catalog", "Catalog에 포함할 TutorialAuthoringAsset이 없습니다.");
-                return result;
-            }
-
-            HashSet<int> usedUids = new HashSet<int>();
-            int validAssetCount = 0;
-
-            for (int i = 0; i < assets.Count; i++)
-            {
-                TutorialAuthoringAsset asset = assets[i];
-                string path = $"Catalog[{i}]";
-                if (asset == null)
-                {
-                    result.AddWarning(path, "비어 있는 제작 데이터 항목은 Catalog에서 제외됩니다.");
-                    continue;
-                }
-
-                asset.EnsureDefaults();
-                validAssetCount++;
-                AppendNestedResult(result, Validate(asset, true), path);
-
-                if (asset.Uid > 0 && !usedUids.Add(asset.Uid))
-                {
-                    result.AddError(path, $"중복 Tutorial UID입니다. uid: {asset.Uid}");
-                }
-            }
-
-            if (validAssetCount <= 0)
-            {
-                result.AddError("Catalog", "Catalog에 저장할 유효한 제작 데이터가 없습니다.");
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// 루트 제작 데이터 필드를 검증합니다.
         /// </summary>
         /// <param name="asset">검증할 제작 데이터입니다.</param>
         /// <param name="result">검증 결과입니다.</param>
-        /// <param name="requireCatalogFields">Catalog 필드를 오류로 검사할지 여부입니다.</param>
         private static void ValidateRoot(
             TutorialAuthoringAsset asset,
-            TutorialAuthoringValidationResult result,
-            bool requireCatalogFields)
+            TutorialAuthoringValidationResult result)
         {
             if (asset.Uid <= 0)
             {
@@ -443,46 +393,6 @@ namespace GGemCo2DTutorialEditor
                         break;
                     case TutorialActionType.ClearInputBlock:
                         hasClearInputBlock = true;
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 중첩 검증 결과를 상위 검증 결과에 병합합니다.
-        /// </summary>
-        /// <param name="target">검증 항목을 추가할 결과입니다.</param>
-        /// <param name="source">병합할 검증 결과입니다.</param>
-        /// <param name="prefix">검증 경로 앞에 붙일 접두사입니다.</param>
-        private static void AppendNestedResult(
-            TutorialAuthoringValidationResult target,
-            TutorialAuthoringValidationResult source,
-            string prefix)
-        {
-            if (target == null || source == null || source.Issues == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < source.Issues.Count; i++)
-            {
-                TutorialAuthoringValidationIssue issue = source.Issues[i];
-                if (issue == null)
-                {
-                    continue;
-                }
-
-                string path = $"{prefix}.{issue.Path}";
-                switch (issue.Severity)
-                {
-                    case TutorialAuthoringValidationSeverity.Error:
-                        target.AddError(path, issue.Message);
-                        break;
-                    case TutorialAuthoringValidationSeverity.Warning:
-                        target.AddWarning(path, issue.Message);
-                        break;
-                    default:
-                        target.AddInfo(path, issue.Message);
                         break;
                 }
             }

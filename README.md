@@ -4,7 +4,7 @@
 
 ## 주요 기능
 
-- Addressables 기반 Tutorial Catalog와 개별 Tutorial JSON 지연 로딩
+- Tutorial 테이블 기반 실행 목록과 개별 Tutorial JSON Addressables 지연 로딩
 - 시작 조건, 단계 완료 조건, 진입/종료 액션 실행
 - Core 맵 입장 및 몬스터 처치 이벤트 기본 연동
 - 입력 액션, UI 창, Quest 상태 등 외부 패키지 이벤트의 느슨한 연동
