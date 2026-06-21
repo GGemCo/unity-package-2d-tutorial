@@ -1,0 +1,16 @@
+{
+  "name": "GGemCo2DTutorial.RuntimeExamples",
+  "rootNamespace": "GGemCo2DTutorial.Samples",
+  "references": [
+    "GGemCo2DTutorial"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

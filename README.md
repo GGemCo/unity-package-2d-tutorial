@@ -12,6 +12,18 @@
 - Core `SaveRegistry`를 이용한 `tutorial.progress` 저장 확장
 - Tutorial JSON 검증 EditorWindow와 샘플 데이터
 
+## 예제
+
+Package Manager의 Samples에서 다음 예제를 가져올 수 있습니다.
+
+- `Tutorial Data`
+  - 기본 조작, UI 상호작용, 전투 누적, 사용자 정의 이벤트의 Tutorial 테이블과 JSON을 제공합니다.
+- `Tutorial Runtime Examples`
+  - `TutorialExampleEventPublisher`로 이벤트 발행, 수동 시작, 입력 차단 조회 흐름을 확인할 수 있습니다.
+  - `TutorialExampleActionHandler`로 가이드, UI 강조, 기능 해금, Quest 시작, 사용자 정의 액션을 UnityEvent에 연결할 수 있습니다.
+
+자세한 설정 순서는 각 샘플 폴더의 `README.md`를 참고하십시오.
+
 ## 의존성
 
 ```text

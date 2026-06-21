@@ -1,14 +1,14 @@
 {
-  "uid": 10001,
-  "title": "기본 조작 튜토리얼",
+  "uid": 10002,
+  "title": "UI 상호작용 튜토리얼",
   "steps": [
     {
       "uid": 1,
-      "messageKey": "tutorial.move",
+      "messageKey": "tutorial.inventory.select_item",
       "conditions": [
         {
-          "type": 3,
-          "key": "Move",
+          "type": 5,
+          "key": "InventoryItem",
           "intValue": 0,
           "requiredCount": 1
         }
@@ -16,29 +16,27 @@
       "actionsOnEnter": [
         {
           "type": 1,
-          "key": "move_guide",
+          "key": "inventory_item_guide",
           "intValue": 0,
           "stringValues": []
         },
         {
-          "type": 5,
-          "key": "",
+          "type": 3,
+          "key": "InventoryItem",
           "intValue": 0,
-          "stringValues": [
-            "Move"
-          ]
+          "stringValues": []
         }
       ],
       "actionsOnExit": [
         {
-          "type": 2,
-          "key": "move_guide",
+          "type": 4,
+          "key": "InventoryItem",
           "intValue": 0,
           "stringValues": []
         },
         {
-          "type": 6,
-          "key": "",
+          "type": 2,
+          "key": "inventory_item_guide",
           "intValue": 0,
           "stringValues": []
         }
@@ -46,42 +44,27 @@
     },
     {
       "uid": 2,
-      "messageKey": "tutorial.jump",
+      "messageKey": "tutorial.inventory.equip_item",
       "conditions": [
         {
-          "type": 3,
-          "key": "Jump",
+          "type": 5,
+          "key": "EquipButton",
           "intValue": 0,
           "requiredCount": 1
         }
       ],
       "actionsOnEnter": [
         {
-          "type": 1,
-          "key": "jump_guide",
+          "type": 3,
+          "key": "EquipButton",
           "intValue": 0,
           "stringValues": []
-        },
-        {
-          "type": 5,
-          "key": "",
-          "intValue": 0,
-          "stringValues": [
-            "Move",
-            "Jump"
-          ]
         }
       ],
       "actionsOnExit": [
         {
-          "type": 2,
-          "key": "jump_guide",
-          "intValue": 0,
-          "stringValues": []
-        },
-        {
-          "type": 6,
-          "key": "",
+          "type": 4,
+          "key": "EquipButton",
           "intValue": 0,
           "stringValues": []
         }

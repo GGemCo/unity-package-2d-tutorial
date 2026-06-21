@@ -1,0 +1,5 @@
+Uid	Name	Enabled	Repeatable	Priority	StartEventType	StartKey	StartIntValue	StartRequiredCount	PreloadPolicy	Memo
+10001	기본 조작 예제	Y	Y	10	InputAction	TutorialExampleStart	0	1	None	이동과 점프 입력 및 입력 제한 정책을 확인합니다.
+10002	UI 상호작용 예제	Y	Y	20	OpenWindow	Inventory	0	1	None	UI 강조와 클릭 이벤트 연결을 확인합니다.
+10003	전투 누적 예제	Y	Y	30	EnterMap		100	1	MapEnter	동일 몬스터 처치 횟수 누적을 확인합니다.
+10004	사용자 정의 이벤트 예제	Y	Y	40	Custom	OnboardingReady	0	1	None	게임 전용 이벤트와 기능 해금 액션을 확인합니다.

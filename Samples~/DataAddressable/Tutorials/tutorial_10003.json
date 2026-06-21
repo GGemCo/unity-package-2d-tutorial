@@ -1,0 +1,40 @@
+{
+  "uid": 10003,
+  "title": "전투 누적 튜토리얼",
+  "steps": [
+    {
+      "uid": 1,
+      "messageKey": "tutorial.combat.defeat_monsters",
+      "conditions": [
+        {
+          "type": 2,
+          "key": "",
+          "intValue": 200,
+          "requiredCount": 3
+        }
+      ],
+      "actionsOnEnter": [
+        {
+          "type": 1,
+          "key": "defeat_monsters_guide",
+          "intValue": 3,
+          "stringValues": []
+        }
+      ],
+      "actionsOnExit": [
+        {
+          "type": 2,
+          "key": "defeat_monsters_guide",
+          "intValue": 0,
+          "stringValues": []
+        },
+        {
+          "type": 100,
+          "key": "CombatTutorialCompleted",
+          "intValue": 10003,
+          "stringValues": []
+        }
+      ]
+    }
+  ]
+}

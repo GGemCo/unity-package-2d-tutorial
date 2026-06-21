@@ -14,8 +14,13 @@
   "samples": [
     {
       "displayName": "Tutorial Data",
-      "description": "기본 조작 튜토리얼 JSON 샘플입니다.",
+      "description": "기본 조작, UI 상호작용, 전투 누적, 사용자 정의 이벤트 Tutorial 데이터 샘플입니다.",
       "path": "Samples~/DataAddressable"
+    },
+    {
+      "displayName": "Tutorial Runtime Examples",
+      "description": "Tutorial 이벤트 발행, 수동 시작, 입력 차단 조회와 외부 액션 처리를 확인하는 Runtime 코드 예제입니다.",
+      "path": "Samples~/RuntimeExamples"
     }
   ],
   "keywords": [
