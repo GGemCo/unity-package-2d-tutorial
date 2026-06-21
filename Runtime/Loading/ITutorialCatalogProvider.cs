@@ -107,7 +107,7 @@ namespace GGemCo2DTutorial
                 if (entry == null)
                 {
                     GcLogger.LogWarning(
-                        $"[Tutorial] TableTutorial 행을 Catalog Entry로 변환하지 못했습니다. uid={row.Uid}, addressableKey={row.AddressableKey}");
+                        $"[Tutorial] TableTutorial 행을 Catalog Entry로 변환하지 못했습니다. uid={row.Uid}");
                     continue;
                 }
 

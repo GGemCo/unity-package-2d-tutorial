@@ -15,7 +15,7 @@ namespace GGemCo2DTutorialEditor
     {
         private const string DefaultTableFileName = "tutorial.txt";
         private const string Header =
-            "Uid\tName\tEnabled\tRepeatable\tPriority\tAddressableKey\tStartEventType\tStartKey\tStartIntValue\tStartRequiredCount\tPreloadPolicy\tMemo";
+            "Uid\tName\tEnabled\tRepeatable\tPriority\tStartEventType\tStartKey\tStartIntValue\tStartRequiredCount\tPreloadPolicy\tMemo";
 
         /// <summary>
         /// 기본 Tutorial 테이블 파일명을 반환합니다.
@@ -117,12 +117,6 @@ namespace GGemCo2DTutorialEditor
                     return false;
                 }
 
-                if (string.IsNullOrWhiteSpace(asset.AddressableKey))
-                {
-                    error = $"Addressables Key가 비어 있습니다. uid: {asset.Uid}, asset: {asset.name}";
-                    return false;
-                }
-
                 AppendRow(builder, asset, i);
             }
 
@@ -151,7 +145,6 @@ namespace GGemCo2DTutorialEditor
                 .Append('Y').Append('\t')
                 .Append(asset.Repeatable ? 'Y' : 'N').Append('\t')
                 .Append(index).Append('\t')
-                .Append(Escape(asset.AddressableKey)).Append('\t')
                 .Append(startEventType).Append('\t')
                 .Append(Escape(startKey)).Append('\t')
                 .Append(startIntValue).Append('\t')

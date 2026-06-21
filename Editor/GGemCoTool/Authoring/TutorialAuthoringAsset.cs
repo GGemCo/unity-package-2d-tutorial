@@ -31,9 +31,7 @@ namespace GGemCo2DTutorialEditor
         private bool repeatable;
 
         [SerializeField]
-        private string addressableKey;
-
-        [SerializeField]
+        [HideInInspector]
         private string exportFileName;
 
         [SerializeField]
@@ -90,23 +88,21 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// Export된 Tutorial JSON의 Addressables 키입니다.
-        /// Catalog Entry 생성 시 사용합니다.
+        /// UID 규칙으로 계산한 Tutorial JSON Addressables 키입니다.
         /// </summary>
         public string AddressableKey
         {
-            get => addressableKey;
-            set => addressableKey = value;
+            get => TutorialAddressableKeyUtility.GetDefinitionAddressableKey(uid);
+            set => exportFileName = TutorialAddressableKeyUtility.GetDefinitionFileName(uid);
         }
 
         /// <summary>
-        /// Export할 Tutorial JSON 파일명입니다.
-        /// 실제 파일 생성은 후속 Export 단계에서 처리합니다.
+        /// UID 규칙으로 계산한 Tutorial JSON 파일명입니다.
         /// </summary>
         public string ExportFileName
         {
-            get => exportFileName;
-            set => exportFileName = value;
+            get => TutorialAddressableKeyUtility.GetDefinitionFileName(uid);
+            set => exportFileName = TutorialAddressableKeyUtility.GetDefinitionFileName(uid);
         }
 
         /// <summary>
@@ -161,7 +157,7 @@ namespace GGemCo2DTutorialEditor
             return new TutorialCatalogEntry
             {
                 uid = uid,
-                addressableKey = string.IsNullOrWhiteSpace(addressableKey) ? null : addressableKey.Trim(),
+                addressableKey = TutorialAddressableKeyUtility.GetDefinitionAddressableKey(uid),
                 repeatable = repeatable,
                 startCondition = startCondition != null && startCondition.Type != TutorialEventType.None
                     ? startCondition.ToRuntimeDefinition()
@@ -217,9 +213,9 @@ namespace GGemCo2DTutorialEditor
                 steps.Add(TutorialAuthoringStep.CreateDefault(1));
             }
 
-            if (string.IsNullOrWhiteSpace(exportFileName) && uid > 0)
+            if (uid > 0)
             {
-                exportFileName = $"tutorial_{uid}.json";
+                exportFileName = TutorialAddressableKeyUtility.GetDefinitionFileName(uid);
             }
         }
 

@@ -90,12 +90,12 @@ namespace GGemCo2DTutorialEditor
         /// <returns>현재 튜토리얼 Addressables 주소입니다.</returns>
         private string GetCurrentTutorialAddress()
         {
-            if (_asset == null || string.IsNullOrWhiteSpace(_asset.AddressableKey))
+            if (_asset == null)
             {
-                return "Addressables Key가 비어 있습니다.";
+                return "TutorialAuthoringAsset을 먼저 선택하십시오.";
             }
 
-            return _asset.AddressableKey.Trim();
+            return TutorialAuthoringNamingUtility.GetDefinitionAddressableKey(_asset.Uid) ?? "유효한 UID가 필요합니다.";
         }
 
         /// <summary>
@@ -176,15 +176,16 @@ namespace GGemCo2DTutorialEditor
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(_asset.AddressableKey))
+            string addressableKey = TutorialAuthoringNamingUtility.GetDefinitionAddressableKey(_asset.Uid);
+            if (string.IsNullOrWhiteSpace(addressableKey))
             {
-                ApplyAddressableRegistrationResult(TutorialAddressableRegistrationResult.Failure("현재 제작 데이터의 Addressables Key가 비어 있습니다."));
+                ApplyAddressableRegistrationResult(TutorialAddressableRegistrationResult.Failure("현재 제작 데이터의 UID가 유효하지 않아 Addressables Key를 계산할 수 없습니다."));
                 return;
             }
 
             TutorialAddressableRegistrationResult result = TutorialAddressableRegisterUtility.RegisterAsset(
                 assetPath,
-                _asset.AddressableKey,
+                addressableKey,
                 _addressablesGroupName,
                 _definitionLabel);
             ApplyAddressableRegistrationResult(result);

@@ -24,7 +24,6 @@ namespace GGemCo2DTutorial
         public bool Enabled;
         public bool Repeatable;
         public int Priority;
-        public string AddressableKey;
         public TutorialEventType StartEventType;
         public string StartKey;
         public int StartIntValue;
@@ -98,7 +97,6 @@ namespace GGemCo2DTutorial
                 Enabled = reader.BoolYN("Enabled", true),
                 Repeatable = reader.BoolYN("Repeatable"),
                 Priority = reader.Int("Priority"),
-                AddressableKey = reader.String("AddressableKey"),
                 StartEventType = reader.Enum("StartEventType", TutorialEventType.None),
                 StartKey = reader.String("StartKey"),
                 StartIntValue = reader.Int("StartIntValue"),
@@ -141,7 +139,13 @@ namespace GGemCo2DTutorial
         /// <returns>런타임 Catalog Entry입니다.</returns>
         public static TutorialCatalogEntry ToCatalogEntry(StruckTableTutorial row)
         {
-            if (row == null || row.Uid <= 0 || string.IsNullOrWhiteSpace(row.AddressableKey))
+            if (row == null || row.Uid <= 0)
+            {
+                return null;
+            }
+
+            string addressableKey = TutorialAddressableKeyUtility.GetDefinitionAddressableKey(row.Uid);
+            if (string.IsNullOrWhiteSpace(addressableKey))
             {
                 return null;
             }
@@ -149,7 +153,7 @@ namespace GGemCo2DTutorial
             return new TutorialCatalogEntry
             {
                 uid = row.Uid,
-                addressableKey = row.AddressableKey.Trim(),
+                addressableKey = addressableKey,
                 repeatable = row.Repeatable,
                 startCondition = BuildStartCondition(row),
             };

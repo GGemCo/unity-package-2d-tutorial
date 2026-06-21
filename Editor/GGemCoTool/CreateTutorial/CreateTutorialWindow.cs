@@ -41,7 +41,7 @@ namespace GGemCo2DTutorialEditor
         /// <summary>
         /// 튜토리얼 제작 창을 엽니다.
         /// </summary>
-        [MenuItem("GGemCo/Tutorial/Create Tutorial")]
+        [MenuItem(ConfigEditorTutorial.NameToolTutorial, false, (int)ConfigEditorTutorial.ToolOrdering.CreateTutorial)]
         public static void Open()
         {
             GetWindow<CreateTutorialWindow>(WindowTitle);
@@ -182,8 +182,7 @@ namespace GGemCo2DTutorialEditor
                 DrawProperty("category", "카테고리");
                 DrawProperty("memo", "제작 메모");
                 DrawProperty("repeatable", "반복 실행");
-                DrawProperty("addressableKey", "Addressables Key");
-                DrawProperty("exportFileName", "Export 파일명");
+                DrawGeneratedNamingInfo();
 
                 EditorGUILayout.Space(8f);
                 DrawStartConditionProperty();
@@ -227,6 +226,34 @@ namespace GGemCo2DTutorialEditor
             }
 
             EditorGUILayout.PropertyField(property, new GUIContent(label), true);
+        }
+
+        /// <summary>
+        /// UID 규칙으로 자동 계산되는 파일명과 Addressables 주소를 표시합니다.
+        /// </summary>
+        private void DrawGeneratedNamingInfo()
+        {
+            if (_asset == null)
+            {
+                return;
+            }
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("자동 생성 이름", EditorStyles.boldLabel);
+                EditorGUILayout.SelectableLabel(
+                    $"Authoring Asset: {TutorialAuthoringNamingUtility.GetAuthoringAssetFileName(_asset.Uid)}",
+                    EditorStyles.wordWrappedMiniLabel,
+                    GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                EditorGUILayout.SelectableLabel(
+                    $"Tutorial JSON: {TutorialAuthoringNamingUtility.GetDefinitionFileName(_asset.Uid)}",
+                    EditorStyles.wordWrappedMiniLabel,
+                    GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                EditorGUILayout.SelectableLabel(
+                    $"Addressables Key: {TutorialAuthoringNamingUtility.GetDefinitionAddressableKey(_asset.Uid) ?? "UID 필요"}",
+                    EditorStyles.wordWrappedMiniLabel,
+                    GUILayout.Height(EditorGUIUtility.singleLineHeight));
+            }
         }
 
         /// <summary>
@@ -279,23 +306,20 @@ namespace GGemCo2DTutorialEditor
         /// </summary>
         private void CreateNewAuthoringAsset()
         {
-            string path = EditorUtility.SaveFilePanelInProject(
-                "Tutorial Authoring Asset 생성",
-                "TutorialAuthoringAsset",
-                "asset",
-                "새 튜토리얼 제작 데이터를 저장할 위치를 선택하십시오.");
-            if (string.IsNullOrEmpty(path))
-            {
-                return;
-            }
+            int uid = TutorialAuthoringNamingUtility.GetNextAvailableUid();
+            string path = TutorialAuthoringNamingUtility.BuildUniqueAuthoringAssetPath(uid);
 
             TutorialAuthoringAsset newAsset = CreateInstance<TutorialAuthoringAsset>();
+            newAsset.Uid = uid;
+            newAsset.Title = $"Tutorial {uid}";
             newAsset.EnsureDefaults();
+
             AssetDatabase.CreateAsset(newAsset, path);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             SetAsset(newAsset);
             Selection.activeObject = newAsset;
+            EditorGUIUtility.PingObject(newAsset);
             _statusMessage = $"새 제작 데이터를 생성했습니다: {path}";
             _statusType = MessageType.Info;
         }

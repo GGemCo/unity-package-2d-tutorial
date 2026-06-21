@@ -124,12 +124,6 @@ namespace GGemCo2DTutorialEditor
                     return false;
                 }
 
-                if (string.IsNullOrWhiteSpace(asset.AddressableKey))
-                {
-                    error = $"Addressables Key가 비어 있습니다. uid: {asset.Uid}, asset: {asset.name}";
-                    return false;
-                }
-
                 catalog.tutorials.Add(asset.ToCatalogEntry());
             }
 

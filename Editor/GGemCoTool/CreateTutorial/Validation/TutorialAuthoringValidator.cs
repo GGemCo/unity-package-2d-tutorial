@@ -50,7 +50,6 @@ namespace GGemCo2DTutorialEditor
             }
 
             HashSet<int> usedUids = new HashSet<int>();
-            HashSet<string> usedAddressableKeys = new HashSet<string>();
             int validAssetCount = 0;
 
             for (int i = 0; i < assets.Count; i++)
@@ -70,12 +69,6 @@ namespace GGemCo2DTutorialEditor
                 if (asset.Uid > 0 && !usedUids.Add(asset.Uid))
                 {
                     result.AddError(path, $"중복 Tutorial UID입니다. uid: {asset.Uid}");
-                }
-
-                string addressableKey = TrimOrNull(asset.AddressableKey);
-                if (!string.IsNullOrEmpty(addressableKey) && !usedAddressableKeys.Add(addressableKey))
-                {
-                    result.AddError(path, $"중복 Addressables Key입니다. key: {addressableKey}");
                 }
             }
 
@@ -108,25 +101,9 @@ namespace GGemCo2DTutorialEditor
                 result.AddWarning("Tutorial.title", "튜토리얼 제목이 비어 있습니다. 제작/QA 구분을 위해 제목 입력을 권장합니다.");
             }
 
-            if (string.IsNullOrWhiteSpace(asset.ExportFileName))
-            {
-                result.AddWarning("Tutorial.exportFileName", "Export 파일명이 비어 있습니다. UID 기반 기본 파일명이 사용됩니다.");
-            }
-            else if (ContainsInvalidFileNameCharacters(asset.ExportFileName))
+            if (ContainsInvalidFileNameCharacters(asset.ExportFileName))
             {
                 result.AddError("Tutorial.exportFileName", "Export 파일명에 사용할 수 없는 문자가 포함되어 있습니다.");
-            }
-
-            if (string.IsNullOrWhiteSpace(asset.AddressableKey))
-            {
-                if (requireCatalogFields)
-                {
-                    result.AddError("Tutorial.addressableKey", "Catalog Export에는 Addressables Key가 필요합니다.");
-                }
-                else
-                {
-                    result.AddWarning("Tutorial.addressableKey", "Addressables Key가 비어 있습니다. Catalog Export 전에는 반드시 입력해야 합니다.");
-                }
             }
         }
 
