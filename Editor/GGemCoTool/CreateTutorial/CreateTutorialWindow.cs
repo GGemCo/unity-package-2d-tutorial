@@ -25,9 +25,11 @@ namespace GGemCo2DTutorialEditor
         private TutorialAuthoringValidationResult _lastValidationResult;
         private string _lastDefinitionJsonPath;
         private string _lastCatalogJsonPath;
+        private string _lastTableTutorialPath;
         private string _addressablesGroupName = TutorialAddressableRegisterUtility.DefaultGroupName;
         private string _definitionLabel = TutorialAddressableRegisterUtility.DefaultDefinitionLabel;
         private string _catalogLabel = TutorialAddressableRegisterUtility.DefaultCatalogLabel;
+        private string _tableLabel = TutorialAddressableRegisterUtility.DefaultTableLabel;
         private int _playModeStartStepIndex;
         private TutorialEventType _playModeEventType = TutorialEventType.InputAction;
         private string _playModeEventKey = string.Empty;
@@ -134,6 +136,11 @@ namespace GGemCo2DTutorialEditor
                     if (GUILayout.Button("Catalog Export", EditorStyles.toolbarButton, GUILayout.Width(105f)))
                     {
                         ExportCurrentCatalogJson();
+                    }
+
+                    if (GUILayout.Button("Table Export", EditorStyles.toolbarButton, GUILayout.Width(95f)))
+                    {
+                        ExportCurrentTableTutorial();
                     }
                 }
 

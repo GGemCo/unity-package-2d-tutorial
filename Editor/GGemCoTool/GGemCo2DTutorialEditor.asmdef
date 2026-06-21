@@ -1,19 +1,20 @@
 {
-  "name": "GGemCo2DTutorialEditor",
-  "rootNamespace": "GGemCo2DTutorialEditor",
-  "references": [
-    "GGemCoScripts",
-    "GGemCo2DTutorial"
-  ],
-  "includePlatforms": [
-    "Editor"
-  ],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "overrideReferences": false,
-  "precompiledReferences": [],
-  "autoReferenced": true,
-  "defineConstraints": [],
-  "versionDefines": [],
-  "noEngineReferences": false
+    "name": "GGemCo2DTutorialEditor",
+    "rootNamespace": "GGemCo2DTutorialEditor",
+    "references": [
+        "GGemCoScripts",
+        "GGemCo2DTutorial",
+        "GGemCo2DCoreEditor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using GGemCo2DCore;
 using UnityEditor;
 using UnityEngine;
 
@@ -26,6 +27,11 @@ namespace GGemCo2DTutorialEditor
         /// 튜토리얼 Catalog JSON에 부여할 기본 라벨입니다.
         /// </summary>
         public const string DefaultCatalogLabel = "tutorial-catalog";
+
+        /// <summary>
+        /// Tutorial 테이블 txt에 부여할 기본 라벨입니다.
+        /// </summary>
+        public const string DefaultTableLabel = ConfigAddressableLabel.Table;
 
         private const string AddressableAssetSettingsDefaultObjectTypeName = "UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject";
         private const string BundledAssetGroupSchemaTypeName = "UnityEditor.AddressableAssets.Settings.GroupSchemas.BundledAssetGroupSchema";

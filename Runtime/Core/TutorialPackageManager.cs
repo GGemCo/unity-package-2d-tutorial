@@ -76,6 +76,9 @@ namespace GGemCo2DTutorial
             }
         }
 
+        /// <summary>
+        /// Core 게임 씬과 저장 매니저가 준비될 때까지 대기한 뒤 Tutorial Runtime을 초기화합니다.
+        /// </summary>
         private IEnumerator InitializeWhenReady()
         {
             while (SceneGame.Instance == null || SceneGame.Instance.saveDataManager == null)
@@ -88,10 +91,25 @@ namespace GGemCo2DTutorial
             TutorialData.Register();
 
             TutorialManager = new TutorialManager(TutorialData);
-            var initializeTask = TutorialManager.InitializeAsync(catalogAddressableKey);
+            ITutorialCatalogProvider tableCatalogProvider = CreateTableCatalogProvider();
+            var initializeTask = tableCatalogProvider != null
+                ? TutorialManager.InitializeAsync(tableCatalogProvider)
+                : TutorialManager.InitializeAsync(catalogAddressableKey);
             while (!initializeTask.IsCompleted)
             {
                 yield return null;
+            }
+
+            if ((initializeTask.IsCanceled || initializeTask.IsFaulted || !initializeTask.Result) &&
+                tableCatalogProvider != null)
+            {
+                GcLogger.LogWarning(
+                    "TableTutorial 기반 초기화에 실패하여 기존 Catalog JSON 로딩으로 전환합니다.");
+                initializeTask = TutorialManager.InitializeAsync(catalogAddressableKey);
+                while (!initializeTask.IsCompleted)
+                {
+                    yield return null;
+                }
             }
 
             if (initializeTask.IsCanceled ||
@@ -109,9 +127,27 @@ namespace GGemCo2DTutorial
             _initializeCoroutine = null;
         }
 
+        /// <summary>
+        /// Game 씬 종료 이벤트를 받으면 Tutorial 패키지 매니저를 제거합니다.
+        /// </summary>
         private void HandleSceneGameDestroyed()
         {
             Destroy(gameObject);
+        }
+
+        /// <summary>
+        /// 로드된 TableTutorial이 있으면 테이블 기반 Catalog 공급자를 생성합니다.
+        /// </summary>
+        /// <returns>테이블 기반 Catalog 공급자입니다. 사용할 테이블이 없으면 null입니다.</returns>
+        private static ITutorialCatalogProvider CreateTableCatalogProvider()
+        {
+            TableLoaderManagerTutorial tableLoader = TableLoaderManagerTutorial.Instance;
+            if (tableLoader == null || tableLoader.TableTutorial.GetCount() <= 0)
+            {
+                return null;
+            }
+
+            return new TableTutorialCatalogProvider(tableLoader.TableTutorial);
         }
 
         /// <summary>

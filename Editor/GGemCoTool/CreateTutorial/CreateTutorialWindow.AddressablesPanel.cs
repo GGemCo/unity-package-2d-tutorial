@@ -10,7 +10,7 @@ namespace GGemCo2DTutorialEditor
     public sealed partial class CreateTutorialWindow
     {
         /// <summary>
-        /// Export된 Tutorial JSON과 Catalog JSON을 Addressables에 등록하는 보조 UI를 그립니다.
+        /// Export된 Tutorial JSON, Catalog JSON, TableTutorial txt를 Addressables에 등록하는 보조 UI를 그립니다.
         /// </summary>
         private void DrawAddressablesPanel()
         {
@@ -18,6 +18,7 @@ namespace GGemCo2DTutorialEditor
             _addressablesGroupName = EditorGUILayout.TextField("Group", _addressablesGroupName);
             _definitionLabel = EditorGUILayout.TextField("Tutorial Label", _definitionLabel);
             _catalogLabel = EditorGUILayout.TextField("Catalog Label", _catalogLabel);
+            _tableLabel = EditorGUILayout.TextField("Table Label", _tableLabel);
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
@@ -59,6 +60,26 @@ namespace GGemCo2DTutorialEditor
                 if (GUILayout.Button("선택 TextAsset을 Catalog JSON으로 등록"))
                 {
                     RegisterSelectedCatalogJson();
+                }
+            }
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("TableTutorial TXT", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("Address", ConfigAddressableTableTutorial.TableTutorial.Key, EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField("Last Export", string.IsNullOrWhiteSpace(_lastTableTutorialPath) ? "없음" : _lastTableTutorialPath, EditorStyles.wordWrappedMiniLabel);
+
+                using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(_lastTableTutorialPath)))
+                {
+                    if (GUILayout.Button("마지막 TableTutorial TXT 등록"))
+                    {
+                        RegisterLastTableTutorial();
+                    }
+                }
+
+                if (GUILayout.Button("선택 TextAsset을 TableTutorial TXT로 등록"))
+                {
+                    RegisterSelectedTableTutorial();
                 }
             }
         }
@@ -122,6 +143,28 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
+        /// 마지막으로 Export한 TableTutorial txt를 Addressables 테이블로 등록합니다.
+        /// </summary>
+        private void RegisterLastTableTutorial()
+        {
+            RegisterTableTutorial(_lastTableTutorialPath);
+        }
+
+        /// <summary>
+        /// 프로젝트 창에서 선택한 TextAsset을 TableTutorial txt로 Addressables에 등록합니다.
+        /// </summary>
+        private void RegisterSelectedTableTutorial()
+        {
+            if (!TutorialAddressableRegisterUtility.TryGetSelectedTextAssetPath(out string assetPath, out string error))
+            {
+                ApplyAddressableRegistrationResult(TutorialAddressableRegistrationResult.Failure(error));
+                return;
+            }
+
+            RegisterTableTutorial(assetPath);
+        }
+
+        /// <summary>
         /// 지정한 Tutorial JSON 에셋 경로를 현재 제작 데이터의 Addressables Key로 등록합니다.
         /// </summary>
         /// <param name="assetPath">등록할 Tutorial JSON 에셋 경로입니다.</param>
@@ -158,6 +201,20 @@ namespace GGemCo2DTutorialEditor
                 TutorialConstants.DefaultCatalogKey,
                 _addressablesGroupName,
                 _catalogLabel);
+            ApplyAddressableRegistrationResult(result);
+        }
+
+        /// <summary>
+        /// 지정한 TableTutorial txt 에셋 경로를 Tutorial 테이블 Addressables Key로 등록합니다.
+        /// </summary>
+        /// <param name="assetPath">등록할 TableTutorial txt 에셋 경로입니다.</param>
+        private void RegisterTableTutorial(string assetPath)
+        {
+            TutorialAddressableRegistrationResult result = TutorialAddressableRegisterUtility.RegisterAsset(
+                assetPath,
+                ConfigAddressableTableTutorial.TableTutorial.Key,
+                _addressablesGroupName,
+                _tableLabel);
             ApplyAddressableRegistrationResult(result);
         }
 
