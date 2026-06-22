@@ -10,13 +10,11 @@ namespace GGemCo2DTutorialEditor
     public sealed partial class CreateTutorialWindow : EditorWindow
     {
         private const string WindowTitle = "Create Tutorial";
-        private const float LeftPanelWidth = 300f;
         private const float StepPanelWidth = 260f;
         private const string LastAssetGuidEditorPrefsKey = "GGemCo2DTutorialEditor.CreateTutorialWindow.LastAssetGuid";
 
         private TutorialAuthoringAsset _asset;
         private SerializedObject _serializedAsset;
-        private Vector2 _leftScrollPosition;
         private Vector2 _stepScrollPosition;
         private Vector2 _detailScrollPosition;
         private int _selectedStepIndex = -1;
@@ -77,10 +75,10 @@ namespace GGemCo2DTutorialEditor
         private void OnGUI()
         {
             DrawToolbar();
+            DrawTutorialSelectionArea();
             EditorGUILayout.HelpBox(_statusMessage, _statusType);
 
             EditorGUILayout.BeginHorizontal();
-            DrawAssetPanel();
             DrawStepPanel();
             DrawStepDetailPanel();
             EditorGUILayout.EndHorizontal();
@@ -94,6 +92,11 @@ namespace GGemCo2DTutorialEditor
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
             {
                 EditorGUILayout.LabelField(WindowTitle, EditorStyles.boldLabel, GUILayout.Width(160f));
+
+                if (GUILayout.Button("JSON Import", EditorStyles.toolbarButton, GUILayout.Width(90f)))
+                {
+                    ImportTutorialJson();
+                }
 
                 using (new EditorGUI.DisabledScope(_asset == null))
                 {
@@ -119,13 +122,12 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// 왼쪽 제작 데이터 선택 및 기본 정보 패널을 그립니다.
+        /// 툴바 아래에 Tutorial 선택, Authoring Asset과 자동 시작 조건을 표시합니다.
         /// </summary>
-        private void DrawAssetPanel()
+        private void DrawTutorialSelectionArea()
         {
-            using (new EditorGUILayout.VerticalScope(GUILayout.Width(LeftPanelWidth)))
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                EditorGUILayout.LabelField("Tutorial 기본 정보", EditorStyles.boldLabel);
                 DrawTutorialTableSelectionPanel();
                 EditorGUILayout.Space(6f);
 
@@ -147,23 +149,12 @@ namespace GGemCo2DTutorialEditor
                 }
 
                 _serializedAsset.Update();
-                _leftScrollPosition = EditorGUILayout.BeginScrollView(_leftScrollPosition);
-
-                // DrawProperty("uid", "UID");
-                // DrawProperty("title", "제목");
-                // DrawProperty("category", "카테고리");
-                // DrawProperty("memo", "제작 메모");
-                // DrawProperty("repeatable", "반복 실행");
-                // DrawGeneratedNamingInfo();
-
                 EditorGUILayout.Space(8f);
                 DrawStartConditionProperty();
-                EditorGUILayout.Space(8f);
-                DrawValidationPanel();
-                EditorGUILayout.Space(8f);
-                DrawPlayModeTestPanel();
 
-                EditorGUILayout.EndScrollView();
+                // 검증 결과와 플레이 모드 테스트 기능은 유지하되 현재 기본 레이아웃에서는 표시하지 않습니다.
+                // DrawValidationPanel();
+                // DrawPlayModeTestPanel();
                 ApplyModifiedProperties();
             }
         }

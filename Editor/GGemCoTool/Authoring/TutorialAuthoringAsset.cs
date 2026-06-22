@@ -59,6 +59,16 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
+        /// 제작 단계에서 튜토리얼을 분류할 카테고리입니다.
+        /// 런타임 JSON으로는 내보내지 않습니다.
+        /// </summary>
+        public string Category
+        {
+            get => category;
+            set => category = value;
+        }
+
+        /// <summary>
         /// 제작자가 남기는 튜토리얼 설명 메모입니다.
         /// 런타임 JSON으로는 내보내지 않습니다.
         /// </summary>

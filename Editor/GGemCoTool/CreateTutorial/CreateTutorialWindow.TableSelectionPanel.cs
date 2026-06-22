@@ -42,7 +42,7 @@ namespace GGemCo2DTutorialEditor
         /// </summary>
         private void DrawTutorialTableSelectionPanel()
         {
-            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            using (new EditorGUILayout.VerticalScope())
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
