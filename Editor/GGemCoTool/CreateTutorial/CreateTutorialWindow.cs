@@ -153,7 +153,6 @@ namespace GGemCo2DTutorialEditor
                 DrawProperty("repeatable", "반복 가능");
                 DrawProperty("preloadPolicy", "사전 로드 정책");
                 DrawStartConditionProperty();
-                DrawProperty("guides", "가이드 이미지");
 
                 // 검증 및 플레이 모드 테스트 기능은 유지하되 현재 기본 레이아웃에서는 숨깁니다.
                 ApplyModifiedProperties();

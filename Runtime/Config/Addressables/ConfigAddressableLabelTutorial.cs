@@ -17,5 +17,10 @@ namespace GGemCo2DTutorial
         /// Tutorial JSON 에셋 라벨입니다.
         /// </summary>
         public const string Tutorial = ConfigDefine.NameSDK + "_Tutorial";
+
+        /// <summary>
+        /// 생성 도구가 자동 등록한 튜토리얼 가이드 Sprite 라벨입니다.
+        /// </summary>
+        public const string GuideSprite = Tutorial + "_GuideSprite";
     }
 }

@@ -21,13 +21,26 @@ namespace GGemCo2DTutorialEditor
             }
 
             SerializedProperty typeProperty = actionProperty.FindPropertyRelative("type");
+            EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(typeProperty, new GUIContent("액션 타입"));
+            if (EditorGUI.EndChangeCheck())
+            {
+                TutorialGuideSpriteAddressableSynchronizer.ScheduleSynchronize();
+            }
+
             TutorialActionType type = (TutorialActionType)typeProperty.intValue;
 
             switch (type)
             {
                 case TutorialActionType.ShowGuide:
-                    DrawTargetUid(actionProperty, "Guide UID");
+                    EditorGUI.BeginChangeCheck();
+                    EditorGUILayout.PropertyField(
+                        actionProperty.FindPropertyRelative("guideSprite"),
+                        new GUIContent("가이드 Sprite"));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        TutorialGuideSpriteAddressableSynchronizer.ScheduleSynchronize();
+                    }
                     break;
                 case TutorialActionType.HighlightUi:
                 case TutorialActionType.ClearHighlight:

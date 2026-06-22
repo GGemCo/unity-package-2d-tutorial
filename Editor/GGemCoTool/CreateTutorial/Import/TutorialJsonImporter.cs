@@ -134,32 +134,35 @@ namespace GGemCo2DTutorialEditor
                 requiredCount = row.StartRequiredCount,
             });
 
-            if (existing != null)
-            {
-                for (int i = 0; i < existing.Guides.Count; i++)
-                {
-                    target.Guides.Add(existing.Guides[i]);
-                }
-            }
-
             target.Steps.Clear();
             for (int i = 0; i < definition.steps.Count; i++)
             {
-                target.Steps.Add(ConvertStep(definition.steps[i]));
+                TutorialStepDefinition sourceStep = definition.steps[i];
+                target.Steps.Add(ConvertStep(
+                    sourceStep,
+                    FindExistingStep(existing, sourceStep.uid)));
             }
 
             target.EnsureDefaults();
         }
 
-        private static TutorialAuthoringStep ConvertStep(TutorialStepDefinition source)
+        private static TutorialAuthoringStep ConvertStep(
+            TutorialStepDefinition source,
+            TutorialAuthoringStep existing)
         {
             TutorialAuthoringStep target =
                 TutorialAuthoringStep.CreateDefault(source.uid);
             target.MessageUid = source.messageUid;
             target.Conditions.Clear();
             CopyConditions(source.conditions, target.Conditions);
-            CopyActions(source.actionsOnEnter, target.ActionsOnEnter);
-            CopyActions(source.actionsOnExit, target.ActionsOnExit);
+            CopyActions(
+                source.actionsOnEnter,
+                target.ActionsOnEnter,
+                existing?.ActionsOnEnter);
+            CopyActions(
+                source.actionsOnExit,
+                target.ActionsOnExit,
+                existing?.ActionsOnExit);
             return target;
         }
 
@@ -195,7 +198,8 @@ namespace GGemCo2DTutorialEditor
 
         private static void CopyActions(
             IReadOnlyList<TutorialActionDefinition> source,
-            List<TutorialAuthoringAction> target)
+            List<TutorialAuthoringAction> target,
+            IReadOnlyList<TutorialAuthoringAction> existing)
         {
             target.Clear();
             if (source == null)
@@ -217,8 +221,48 @@ namespace GGemCo2DTutorialEditor
                 action.IntValue = sourceAction.intValue;
                 action.InputMask = sourceAction.inputMask;
                 action.GameplayState = sourceAction.gameplayState;
+                Sprite resolvedSprite =
+                    TutorialGuideSpriteAddressableSynchronizer.ResolveSprite(
+                        sourceAction.guideSpriteAddress);
+                if (resolvedSprite == null &&
+                    sourceAction.type == TutorialActionType.ShowGuide &&
+                    existing != null &&
+                    i < existing.Count)
+                {
+                    resolvedSprite = existing[i]?.GuideSprite;
+                }
+
+                action.GuideSprite = resolvedSprite;
+                action.SetGuideSpriteAddress(sourceAction.guideSpriteAddress);
                 target.Add(action);
             }
+        }
+
+        /// <summary>
+        /// 기존 제작 에셋에서 동일 UID의 단계를 찾아 JSON Import 시 Editor 전용 참조를 보존합니다.
+        /// </summary>
+        /// <param name="asset">기존 제작 에셋입니다.</param>
+        /// <param name="stepUid">검색할 Step UID입니다.</param>
+        /// <returns>동일 UID의 기존 단계이며 찾지 못하면 null입니다.</returns>
+        private static TutorialAuthoringStep FindExistingStep(
+            TutorialAuthoringAsset asset,
+            int stepUid)
+        {
+            if (asset == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < asset.Steps.Count; i++)
+            {
+                TutorialAuthoringStep step = asset.Steps[i];
+                if (step != null && step.Uid == stepUid)
+                {
+                    return step;
+                }
+            }
+
+            return null;
         }
 
         private static bool HasUtf8Bom(byte[] bytes)

@@ -16,10 +16,6 @@ namespace GGemCo2DTutorial
         {
             /// <summary>Assets/{SDK}/DataAddressable/Tutorials</summary>
             public static string RootTutorial => ConfigAddressablePath.Combine(ConfigAddressablePath.Root, "Tutorials");
-
-            /// <summary>튜토리얼 가이드 Sprite 카탈로그 에셋 경로입니다.</summary>
-            public static string GuideCatalog =>
-                ConfigAddressablePath.Combine(RootTutorial, "TutorialGuideCatalog.asset");
         }
     }
 }

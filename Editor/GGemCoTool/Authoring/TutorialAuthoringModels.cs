@@ -57,9 +57,17 @@ namespace GGemCo2DTutorialEditor
             };
         }
 
+        /// <summary>
+        /// 조건 값을 유효 범위로 보정하고 단일 가이드 클릭 정책을 적용합니다.
+        /// </summary>
         public void EnsureDefaults()
         {
             targetUid = Mathf.Max(0, targetUid);
+            if (type == TutorialEventType.GuideClicked)
+            {
+                targetUid = 0;
+            }
+
             floatValue = Mathf.Max(0f, floatValue);
             requiredCount = Mathf.Max(1, requiredCount);
         }
@@ -76,6 +84,8 @@ namespace GGemCo2DTutorialEditor
         [SerializeField] private int intValue;
         [SerializeField] private TutorialInputActionMask inputMask;
         [SerializeField] private TutorialGameplayState gameplayState;
+        [SerializeField] private Sprite guideSprite;
+        [SerializeField, HideInInspector] private string guideSpriteAddress;
         [SerializeField, TextArea(1, 3)] private string memo;
 
         public TutorialActionType Type { get => type; set => type = value; }
@@ -83,6 +93,8 @@ namespace GGemCo2DTutorialEditor
         public int IntValue { get => intValue; set => intValue = value; }
         public TutorialInputActionMask InputMask { get => inputMask; set => inputMask = value; }
         public TutorialGameplayState GameplayState { get => gameplayState; set => gameplayState = value; }
+        public Sprite GuideSprite { get => guideSprite; set => guideSprite = value; }
+        public string GuideSpriteAddress => guideSpriteAddress;
         public string Memo { get => memo; set => memo = value; }
 
         /// <summary>
@@ -106,12 +118,83 @@ namespace GGemCo2DTutorialEditor
                 intValue = intValue,
                 inputMask = inputMask,
                 gameplayState = gameplayState,
+                guideSpriteAddress = type == TutorialActionType.ShowGuide
+                    ? guideSpriteAddress
+                    : null,
             };
         }
 
+        /// <summary>
+        /// Addressables 동기화 결과로 계산된 가이드 Sprite 런타임 주소를 저장합니다.
+        /// </summary>
+        /// <param name="address">Sprite 또는 Sprite 하위 에셋을 로드할 Addressables 주소입니다.</param>
+        public void SetGuideSpriteAddress(string address)
+        {
+            guideSpriteAddress = string.IsNullOrWhiteSpace(address)
+                ? null
+                : address.Trim();
+        }
+
+        /// <summary>
+        /// 기존 Guide UID 기반 제작 데이터를 직접 Sprite 참조 방식으로 변환합니다.
+        /// </summary>
+        /// <param name="legacyGuides">이전 제작 에셋에 저장된 가이드 목록입니다.</param>
+        /// <returns>변환할 데이터가 없거나 Sprite 변환에 성공하면 true입니다.</returns>
+        public bool TryMigrateLegacyGuide(
+            IReadOnlyList<TutorialAuthoringGuide> legacyGuides)
+        {
+            if (type != TutorialActionType.ShowGuide || targetUid <= 0)
+            {
+                return true;
+            }
+
+            if (guideSprite != null)
+            {
+                targetUid = 0;
+                return true;
+            }
+
+            if (legacyGuides == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < legacyGuides.Count; i++)
+            {
+                TutorialAuthoringGuide guide = legacyGuides[i];
+                if (guide == null || guide.Uid != targetUid || guide.Sprite == null)
+                {
+                    continue;
+                }
+
+                guideSprite = guide.Sprite;
+                targetUid = 0;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 액션 값을 보정하고 현재 액션 타입에서 사용하지 않는 가이드 참조를 정리합니다.
+        /// </summary>
         public void EnsureDefaults()
         {
             targetUid = Mathf.Max(0, targetUid);
+            if (type == TutorialActionType.ShowGuide)
+            {
+                targetUid = 0;
+            }
+
+            if (type != TutorialActionType.ShowGuide)
+            {
+                guideSprite = null;
+                guideSpriteAddress = null;
+            }
+            else if (guideSprite == null)
+            {
+                guideSpriteAddress = null;
+            }
         }
     }
 
@@ -188,6 +271,10 @@ namespace GGemCo2DTutorialEditor
             };
         }
 
+        /// <summary>
+        /// 단계 UID와 내부 목록을 유효한 제작 상태로 보정합니다.
+        /// </summary>
+        /// <param name="fallbackUid">UID가 없을 때 사용할 기본 UID입니다.</param>
         public void EnsureDefaults(int fallbackUid)
         {
             uid = uid > 0 ? uid : Mathf.Max(1, fallbackUid);
@@ -201,6 +288,10 @@ namespace GGemCo2DTutorialEditor
             EnsureActions(actionsOnExit);
         }
 
+        /// <summary>
+        /// 유효한 제작 조건만 런타임 조건 목록으로 변환합니다.
+        /// </summary>
+        /// <returns>런타임 조건 목록입니다.</returns>
         private List<TutorialConditionDefinition> ConvertConditions()
         {
             List<TutorialConditionDefinition> result = new List<TutorialConditionDefinition>();
@@ -216,6 +307,11 @@ namespace GGemCo2DTutorialEditor
             return result;
         }
 
+        /// <summary>
+        /// 유효한 제작 액션만 런타임 액션 목록으로 변환합니다.
+        /// </summary>
+        /// <param name="source">변환할 제작 액션 목록입니다.</param>
+        /// <returns>런타임 액션 목록입니다.</returns>
         private static List<TutorialActionDefinition> ConvertActions(
             List<TutorialAuthoringAction> source)
         {
@@ -232,6 +328,10 @@ namespace GGemCo2DTutorialEditor
             return result;
         }
 
+        /// <summary>
+        /// null 조건을 제거하고 남은 조건 값을 보정합니다.
+        /// </summary>
+        /// <param name="source">보정할 조건 목록입니다.</param>
         private static void EnsureConditions(List<TutorialAuthoringCondition> source)
         {
             for (int i = source.Count - 1; i >= 0; i--)
@@ -247,6 +347,10 @@ namespace GGemCo2DTutorialEditor
             }
         }
 
+        /// <summary>
+        /// null 액션을 제거하고 남은 액션 값을 보정합니다.
+        /// </summary>
+        /// <param name="source">보정할 액션 목록입니다.</param>
         private static void EnsureActions(List<TutorialAuthoringAction> source)
         {
             for (int i = source.Count - 1; i >= 0; i--)
@@ -258,6 +362,39 @@ namespace GGemCo2DTutorialEditor
                 else
                 {
                     source[i].EnsureDefaults();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 이 단계에 포함된 모든 액션을 지정 목록에 추가합니다.
+        /// </summary>
+        /// <param name="result">액션을 누적할 목록입니다.</param>
+        public void CollectActions(List<TutorialAuthoringAction> result)
+        {
+            if (result == null)
+            {
+                return;
+            }
+
+            CollectActions(actionsOnEnter, result);
+            CollectActions(actionsOnExit, result);
+        }
+
+        /// <summary>
+        /// 지정 액션 목록의 유효한 항목을 결과 목록에 추가합니다.
+        /// </summary>
+        /// <param name="source">수집할 원본 액션 목록입니다.</param>
+        /// <param name="result">액션을 누적할 결과 목록입니다.</param>
+        private static void CollectActions(
+            IReadOnlyList<TutorialAuthoringAction> source,
+            List<TutorialAuthoringAction> result)
+        {
+            for (int i = 0; i < source.Count; i++)
+            {
+                if (source[i] != null)
+                {
+                    result.Add(source[i]);
                 }
             }
         }

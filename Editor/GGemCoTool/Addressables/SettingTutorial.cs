@@ -100,6 +100,14 @@ namespace GGemCo2DTutorialEditor
             
                 Add(settings, group, key, assetPath, label);
             }
+
+            TutorialExportResult guideSyncResult =
+                TutorialGuideSpriteAddressableSynchronizer.Synchronize();
+            if (!guideSyncResult.Succeeded)
+            {
+                HelperLog.Error(guideSyncResult.Message, ctx);
+                return;
+            }
             
             // 설정 저장
             settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, null, true);

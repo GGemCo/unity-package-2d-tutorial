@@ -23,6 +23,14 @@ namespace GGemCo2DTutorialEditor
             _asset.EnsureDefaults();
             MarkAssetDirty();
 
+            TutorialExportResult result =
+                TutorialGuideSpriteAddressableSynchronizer.Synchronize();
+            if (!result.Succeeded)
+            {
+                ApplyExportResult(result);
+                return;
+            }
+
             _lastValidationResult = TutorialAuthoringValidator.Validate(_asset);
             if (!_lastValidationResult.IsValid)
             {
@@ -32,7 +40,7 @@ namespace GGemCo2DTutorialEditor
             }
 
             string path = TutorialAuthoringNamingUtility.GetDefinitionJsonAssetPath(_asset.Uid);
-            TutorialExportResult result = TutorialJsonExporter.ExportDefinition(_asset, path);
+            result = TutorialJsonExporter.ExportDefinition(_asset, path);
             if (result.Succeeded)
             {
                 result = TutorialDefinitionAddressableRegistrar.Register(
@@ -43,11 +51,6 @@ namespace GGemCo2DTutorialEditor
             if (result.Succeeded)
             {
                 result = TutorialTableExporter.Export(_asset);
-            }
-
-            if (result.Succeeded)
-            {
-                result = TutorialGuideCatalogExporter.Export(_asset);
             }
 
             ApplyExportResult(result);

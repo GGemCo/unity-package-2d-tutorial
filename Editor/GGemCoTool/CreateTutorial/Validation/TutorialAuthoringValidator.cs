@@ -27,8 +27,6 @@ namespace GGemCo2DTutorialEditor
             }
 
             ValidateCondition(result, "StartCondition", asset.StartCondition, true);
-            ValidateGuides(result, asset.Guides);
-
             HashSet<int> stepUids = new HashSet<int>();
             for (int i = 0; i < asset.Steps.Count; i++)
             {
@@ -61,8 +59,8 @@ namespace GGemCo2DTutorialEditor
                         false);
                 }
 
-                ValidateActions(result, path, step.ActionsOnEnter, asset.Guides);
-                ValidateActions(result, path, step.ActionsOnExit, asset.Guides);
+                ValidateActions(result, path, step.ActionsOnEnter);
+                ValidateActions(result, path, step.ActionsOnExit);
             }
 
             return result;
@@ -109,33 +107,10 @@ namespace GGemCo2DTutorialEditor
             }
         }
 
-        private static void ValidateGuides(
-            TutorialAuthoringValidationResult result,
-            IReadOnlyList<TutorialAuthoringGuide> guides)
-        {
-            HashSet<int> guideUids = new HashSet<int>();
-            for (int i = 0; i < guides.Count; i++)
-            {
-                TutorialAuthoringGuide guide = guides[i];
-                string path = $"Guides[{i}]";
-                if (guide == null ||
-                    guide.Uid <= 0 ||
-                    !guideUids.Add(guide.Uid))
-                {
-                    result.AddError(path, "Guide UID는 1 이상이며 중복될 수 없습니다.");
-                }
-                else if (guide.Sprite == null)
-                {
-                    result.AddError(path, "Project 창의 Sprite를 연결해야 합니다.");
-                }
-            }
-        }
-
         private static void ValidateActions(
             TutorialAuthoringValidationResult result,
             string stepPath,
-            IReadOnlyList<TutorialAuthoringAction> actions,
-            IReadOnlyList<TutorialAuthoringGuide> guides)
+            IReadOnlyList<TutorialAuthoringAction> actions)
         {
             for (int i = 0; i < actions.Count; i++)
             {
@@ -148,26 +123,11 @@ namespace GGemCo2DTutorialEditor
                 }
 
                 if (action.Type == TutorialActionType.ShowGuide &&
-                    !ContainsGuide(guides, action.TargetUid))
+                    action.GuideSprite == null)
                 {
-                    result.AddError(path, "ShowGuide의 Guide UID가 가이드 이미지 목록에 없습니다.");
+                    result.AddError(path, "ShowGuide에는 Project 창의 Sprite를 연결해야 합니다.");
                 }
             }
-        }
-
-        private static bool ContainsGuide(
-            IReadOnlyList<TutorialAuthoringGuide> guides,
-            int guideUid)
-        {
-            for (int i = 0; i < guides.Count; i++)
-            {
-                if (guides[i] != null && guides[i].Uid == guideUid)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

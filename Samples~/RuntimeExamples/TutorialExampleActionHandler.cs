@@ -10,7 +10,7 @@ namespace GGemCo2DTutorialSamples
     public sealed class TutorialExampleActionHandler : MonoBehaviour,
         ITutorialActionHandler
     {
-        [SerializeField] private UnityEvent<int> onGuideShown;
+        [SerializeField] private UnityEvent onGuideShown;
         [SerializeField] private UnityEvent<int> onUiHighlighted;
         [SerializeField] private UnityEvent<int> onFeatureUnlocked;
 
@@ -30,7 +30,7 @@ namespace GGemCo2DTutorialSamples
             switch (action.type)
             {
                 case TutorialActionType.ShowGuide:
-                    onGuideShown?.Invoke(action.targetUid);
+                    onGuideShown?.Invoke();
                     return true;
                 case TutorialActionType.HighlightUi:
                     onUiHighlighted?.Invoke(action.targetUid);

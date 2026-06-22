@@ -32,8 +32,12 @@ namespace GGemCo2DTutorialEditor
                 case TutorialEventType.UiClicked:
                 case TutorialEventType.QuestStarted:
                 case TutorialEventType.QuestCompleted:
-                case TutorialEventType.GuideClicked:
                     DrawTargetUid(conditionProperty, GetTargetLabel(type));
+                    break;
+                case TutorialEventType.GuideClicked:
+                    EditorGUILayout.HelpBox(
+                        "현재 표시 중인 단일 가이드 UI의 클릭을 기다립니다.",
+                        MessageType.Info);
                     break;
                 case TutorialEventType.InputAction:
                     EditorGUILayout.PropertyField(
@@ -77,7 +81,6 @@ namespace GGemCo2DTutorialEditor
                 TutorialEventType.UiClicked => "UI Target UID",
                 TutorialEventType.QuestStarted => "Quest UID",
                 TutorialEventType.QuestCompleted => "Quest UID",
-                TutorialEventType.GuideClicked => "Guide UID",
                 _ => "Target UID",
             };
         }

@@ -20,11 +20,6 @@ namespace GGemCo2DTutorial
         public const string Tutorial = ConfigDefine.NameSDK + "_Tutorial";
 
         /// <summary>
-        /// 생성툴에서 구성한 가이드 Sprite 카탈로그의 Addressables 주소입니다.
-        /// </summary>
-        public const string GuideCatalog = Tutorial + "_GuideCatalog";
-
-        /// <summary>
         /// 지정한 Tutorial UID에 대응되는 Tutorial JSON Addressables 주소를 반환합니다.
         /// </summary>
         /// <param name="uid">Tutorial UID입니다.</param>

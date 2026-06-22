@@ -41,7 +41,8 @@ namespace GGemCo2DTutorialEditor
             Logs.Add(
                 $"Action tutorial={context.TutorialUid}, step={context.StepIndex}, " +
                 $"type={action.type}, targetUid={action.targetUid}, int={action.intValue}, " +
-                $"inputMask={action.inputMask}, state={action.gameplayState}");
+                $"inputMask={action.inputMask}, state={action.gameplayState}, " +
+                $"guideSpriteAddress={action.guideSpriteAddress}");
             return false;
         }
     }

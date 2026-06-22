@@ -145,10 +145,12 @@ namespace GGemCo2DTutorialEditor
                     if (GUILayout.Button("초기화", GUILayout.Width(60f)))
                     {
                         reset(element);
+                        ScheduleGuideSynchronizationIfAction(element);
                     }
 
                     if (GUILayout.Button("삭제", GUILayout.Width(50f)))
                     {
+                        ScheduleGuideSynchronizationIfAction(element);
                         DeleteArrayElement(array, index);
                         return;
                     }
@@ -249,6 +251,8 @@ namespace GGemCo2DTutorialEditor
             SetInt(property, "intValue", 0);
             SetEnum(property, "inputMask", 0);
             SetEnum(property, "gameplayState", 0);
+            SetObject(property, "guideSprite", null);
+            SetString(property, "guideSpriteAddress", string.Empty);
             SetString(property, "memo", string.Empty);
             property.isExpanded = true;
         }
@@ -298,6 +302,31 @@ namespace GGemCo2DTutorialEditor
             if (property != null)
             {
                 property.stringValue = value;
+            }
+        }
+
+        private static void SetObject(
+            SerializedProperty parent,
+            string name,
+            UnityEngine.Object value)
+        {
+            SerializedProperty property = parent?.FindPropertyRelative(name);
+            if (property != null)
+            {
+                property.objectReferenceValue = value;
+            }
+        }
+
+        /// <summary>
+        /// 대상 SerializedProperty가 액션이면 가이드 Addressables 지연 동기화를 예약합니다.
+        /// </summary>
+        /// <param name="property">검사할 목록 요소입니다.</param>
+        private static void ScheduleGuideSynchronizationIfAction(
+            SerializedProperty property)
+        {
+            if (property?.FindPropertyRelative("guideSprite") != null)
+            {
+                TutorialGuideSpriteAddressableSynchronizer.ScheduleSynchronize();
             }
         }
     }

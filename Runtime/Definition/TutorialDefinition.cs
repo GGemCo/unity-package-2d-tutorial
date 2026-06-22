@@ -136,7 +136,7 @@ namespace GGemCo2DTutorial
     }
 
     /// <summary>
-    /// 표준 액션 처리기에 전달할 UID와 enum 기반 인자를 정의합니다.
+    /// 표준 액션 처리기에 전달할 UID, enum, Addressables 주소 기반 인자를 정의합니다.
     /// </summary>
     [Serializable]
     public sealed class TutorialActionDefinition
@@ -146,5 +146,10 @@ namespace GGemCo2DTutorial
         public int intValue;
         public TutorialInputActionMask inputMask;
         public TutorialGameplayState gameplayState;
+
+        /// <summary>
+        /// ShowGuide 액션에서 표시할 Sprite의 Addressables 런타임 주소입니다.
+        /// </summary>
+        public string guideSpriteAddress;
     }
 }

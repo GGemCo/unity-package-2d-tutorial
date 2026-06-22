@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using GGemCo2DTutorial;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace GGemCo2DTutorialEditor
 {
@@ -24,7 +25,8 @@ namespace GGemCo2DTutorialEditor
         [SerializeField, HideInInspector] private string exportFileName;
         [SerializeField] private TutorialAuthoringCondition startCondition =
             TutorialAuthoringCondition.CreateDefault();
-        [SerializeField] private List<TutorialAuthoringGuide> guides =
+        [FormerlySerializedAs("guides")]
+        [SerializeField, HideInInspector] private List<TutorialAuthoringGuide> legacyGuides =
             new List<TutorialAuthoringGuide>();
         [SerializeField] private List<TutorialAuthoringStep> steps =
             new List<TutorialAuthoringStep>();
@@ -43,7 +45,6 @@ namespace GGemCo2DTutorialEditor
             set => exportFileName = ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
         }
         public TutorialAuthoringCondition StartCondition => startCondition;
-        public List<TutorialAuthoringGuide> Guides => guides;
         public List<TutorialAuthoringStep> Steps => steps;
 
         /// <summary>
@@ -87,9 +88,10 @@ namespace GGemCo2DTutorialEditor
         {
             startCondition ??= TutorialAuthoringCondition.CreateDefault();
             startCondition.EnsureDefaults();
-            guides ??= new List<TutorialAuthoringGuide>();
+            legacyGuides ??= new List<TutorialAuthoringGuide>();
             steps ??= new List<TutorialAuthoringStep>();
 
+            bool legacyGuidesMigrated = true;
             for (int i = steps.Count - 1; i >= 0; i--)
             {
                 if (steps[i] == null)
@@ -98,8 +100,15 @@ namespace GGemCo2DTutorialEditor
                 }
                 else
                 {
+                    legacyGuidesMigrated &=
+                        MigrateLegacyGuideActions(steps[i], legacyGuides);
                     steps[i].EnsureDefaults(i + 1);
                 }
+            }
+
+            if (legacyGuidesMigrated && legacyGuides.Count > 0)
+            {
+                legacyGuides.Clear();
             }
 
             if (steps.Count == 0)
@@ -130,6 +139,43 @@ namespace GGemCo2DTutorialEditor
             }
 
             return maxUid + 1;
+        }
+
+        /// <summary>
+        /// 모든 단계의 액션을 지정 목록에 추가합니다.
+        /// </summary>
+        /// <param name="result">액션을 누적할 목록입니다.</param>
+        public void CollectActions(List<TutorialAuthoringAction> result)
+        {
+            if (result == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < steps.Count; i++)
+            {
+                steps[i]?.CollectActions(result);
+            }
+        }
+
+        private static bool MigrateLegacyGuideActions(
+            TutorialAuthoringStep step,
+            IReadOnlyList<TutorialAuthoringGuide> guides)
+        {
+            bool migrated = true;
+            for (int i = 0; i < step.ActionsOnEnter.Count; i++)
+            {
+                migrated &= step.ActionsOnEnter[i] == null ||
+                            step.ActionsOnEnter[i].TryMigrateLegacyGuide(guides);
+            }
+
+            for (int i = 0; i < step.ActionsOnExit.Count; i++)
+            {
+                migrated &= step.ActionsOnExit[i] == null ||
+                            step.ActionsOnExit[i].TryMigrateLegacyGuide(guides);
+            }
+
+            return migrated;
         }
     }
 }

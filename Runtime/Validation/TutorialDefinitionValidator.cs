@@ -60,6 +60,67 @@ namespace GGemCo2DTutorial
                         return false;
                     }
                 }
+
+                if (!ValidateActions(
+                        expectedUid,
+                        i,
+                        step.actionsOnEnter,
+                        "enter",
+                        out error) ||
+                    !ValidateActions(
+                        expectedUid,
+                        i,
+                        step.actionsOnExit,
+                        "exit",
+                        out error))
+                {
+                    return false;
+                }
+            }
+
+            error = null;
+            return true;
+        }
+
+        /// <summary>
+        /// 단계 액션 목록과 ShowGuide Sprite 주소를 검증합니다.
+        /// </summary>
+        /// <param name="tutorialUid">검증 중인 Tutorial UID입니다.</param>
+        /// <param name="stepIndex">검증 중인 단계 인덱스입니다.</param>
+        /// <param name="actions">검증할 액션 목록입니다.</param>
+        /// <param name="phase">진입 또는 종료 액션 구분 문자열입니다.</param>
+        /// <param name="error">검증 실패 메시지입니다.</param>
+        /// <returns>모든 액션이 유효하면 true입니다.</returns>
+        private static bool ValidateActions(
+            int tutorialUid,
+            int stepIndex,
+            System.Collections.Generic.IReadOnlyList<TutorialActionDefinition> actions,
+            string phase,
+            out string error)
+        {
+            if (actions == null)
+            {
+                error = null;
+                return true;
+            }
+
+            for (int i = 0; i < actions.Count; i++)
+            {
+                TutorialActionDefinition action = actions[i];
+                if (action == null || action.type == TutorialActionType.None)
+                {
+                    error =
+                        $"Tutorial 액션이 유효하지 않습니다. uid: {tutorialUid}, stepIndex: {stepIndex}, phase: {phase}, actionIndex: {i}";
+                    return false;
+                }
+
+                if (action.type == TutorialActionType.ShowGuide &&
+                    string.IsNullOrWhiteSpace(action.guideSpriteAddress))
+                {
+                    error =
+                        $"ShowGuide 가이드 Sprite 주소가 없습니다. uid: {tutorialUid}, stepIndex: {stepIndex}, phase: {phase}, actionIndex: {i}";
+                    return false;
+                }
             }
 
             error = null;
