@@ -40,13 +40,13 @@ TimingBattle 타입을 직접 참조하지 않습니다.
 Control 또는 게임 입력 계층:
 
 ```csharp
-TutorialEventBus.PublishInputAction("Jump");
+TutorialEventBus.PublishInputAction(TutorialInputActionType.Jump);
 ```
 
 UI 계층:
 
 ```csharp
-TutorialEventBus.PublishWindowOpened("SkillWindow");
+TutorialEventBus.PublishWindowOpened(1001);
 ```
 
 Quest Adapter:
@@ -64,7 +64,7 @@ TutorialActionHandlerRegistry.Register(handler);
 TutorialActionHandlerRegistry.Unregister(handler);
 ```
 
-처리기는 `ShowGuide`, `HighlightUi`, `UnlockFeature`, `StartQuest`, `Custom` 액션을
+처리기는 `ShowGuide`, `HighlightUi`, `UnlockFeature`, `StartQuest`, `SetGameplayState` 액션을
 프로젝트 정책에 맞게 실행합니다. Tutorial 패키지는 해당 시스템의 구체 타입을 알지 않습니다.
 
 ## 입력 제한 연동

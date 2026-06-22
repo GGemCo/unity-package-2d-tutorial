@@ -272,14 +272,19 @@ namespace GGemCo2DTutorialEditor
             newAsset.Uid = row.Uid;
             newAsset.Title = string.IsNullOrWhiteSpace(row.Name) ? $"Tutorial {row.Uid}" : row.Name;
             newAsset.Memo = row.Memo;
+            newAsset.Enabled = row.Enabled;
             newAsset.Repeatable = row.Repeatable;
+            newAsset.Priority = row.Priority;
+            newAsset.PreloadPolicy = row.PreloadPolicy;
             newAsset.EnsureDefaults();
 
             // 테이블의 자동 시작 조건을 제작 데이터에 복사하여 런타임 정책과 초기 상태를 일치시킵니다.
             TutorialAuthoringCondition startCondition = newAsset.StartCondition;
             startCondition.Type = row.StartEventType;
-            startCondition.Key = row.StartKey;
+            startCondition.TargetUid = row.StartTargetUid;
+            startCondition.InputAction = row.StartInputAction;
             startCondition.IntValue = row.StartIntValue;
+            startCondition.FloatValue = row.StartFloatValue;
             startCondition.RequiredCount = row.StartRequiredCount;
 
             AssetDatabase.CreateAsset(newAsset, path);

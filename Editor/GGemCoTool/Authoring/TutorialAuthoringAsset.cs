@@ -5,8 +5,7 @@ using UnityEngine;
 namespace GGemCo2DTutorialEditor
 {
     /// <summary>
-    /// 튜토리얼 제작 툴에서 편집할 ScriptableObject 원본 데이터입니다.
-    /// Export 단계에서 런타임 Tutorial Catalog/Definition JSON으로 변환합니다.
+    /// 튜토리얼 JSON, 카탈로그 테이블, 가이드 이미지를 한곳에서 제작하는 원본 에셋입니다.
     /// </summary>
     [CreateAssetMenu(
         fileName = "TutorialAuthoringAsset",
@@ -14,102 +13,42 @@ namespace GGemCo2DTutorialEditor
         order = 2100)]
     public sealed class TutorialAuthoringAsset : ScriptableObject
     {
-        [SerializeField]
-        private int uid;
+        [SerializeField] private int uid;
+        [SerializeField] private string title;
+        [SerializeField] private string category;
+        [SerializeField, TextArea(2, 5)] private string memo;
+        [SerializeField] private bool enabled = true;
+        [SerializeField] private bool repeatable;
+        [SerializeField] private int priority;
+        [SerializeField] private TutorialPreloadPolicy preloadPolicy;
+        [SerializeField, HideInInspector] private string exportFileName;
+        [SerializeField] private TutorialAuthoringCondition startCondition =
+            TutorialAuthoringCondition.CreateDefault();
+        [SerializeField] private List<TutorialAuthoringGuide> guides =
+            new List<TutorialAuthoringGuide>();
+        [SerializeField] private List<TutorialAuthoringStep> steps =
+            new List<TutorialAuthoringStep>();
 
-        [SerializeField]
-        private string title;
-
-        [SerializeField]
-        private string category;
-
-        [SerializeField]
-        [TextArea(2, 5)]
-        private string memo;
-
-        [SerializeField]
-        private bool repeatable;
-
-        [SerializeField]
-        [HideInInspector]
-        private string exportFileName;
-
-        [SerializeField]
-        private TutorialAuthoringCondition startCondition = TutorialAuthoringCondition.CreateDefault();
-
-        [SerializeField]
-        private List<TutorialAuthoringStep> steps = new List<TutorialAuthoringStep>();
-
-        /// <summary>
-        /// 튜토리얼 UID입니다.
-        /// </summary>
-        public int Uid
-        {
-            get => uid;
-            set => uid = value;
-        }
-
-        /// <summary>
-        /// 튜토리얼 제목입니다.
-        /// </summary>
-        public string Title
-        {
-            get => title;
-            set => title = value;
-        }
-
-        /// <summary>
-        /// 제작 단계에서 튜토리얼을 분류할 카테고리입니다.
-        /// 런타임 JSON으로는 내보내지 않습니다.
-        /// </summary>
-        public string Category
-        {
-            get => category;
-            set => category = value;
-        }
-
-        /// <summary>
-        /// 제작자가 남기는 튜토리얼 설명 메모입니다.
-        /// 런타임 JSON으로는 내보내지 않습니다.
-        /// </summary>
-        public string Memo
-        {
-            get => memo;
-            set => memo = value;
-        }
-
-        /// <summary>
-        /// 완료 후에도 자동 시작 조건이 다시 충족되면 재실행할지 여부입니다.
-        /// </summary>
-        public bool Repeatable
-        {
-            get => repeatable;
-            set => repeatable = value;
-        }
-
-        /// <summary>
-        /// UID 규칙으로 계산한 Tutorial JSON 파일명입니다.
-        /// </summary>
+        public int Uid { get => uid; set => uid = value; }
+        public string Title { get => title; set => title = value; }
+        public string Category { get => category; set => category = value; }
+        public string Memo { get => memo; set => memo = value; }
+        public bool Enabled { get => enabled; set => enabled = value; }
+        public bool Repeatable { get => repeatable; set => repeatable = value; }
+        public int Priority { get => priority; set => priority = value; }
+        public TutorialPreloadPolicy PreloadPolicy { get => preloadPolicy; set => preloadPolicy = value; }
         public string ExportFileName
         {
             get => ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
             set => exportFileName = ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
         }
-
-        /// <summary>
-        /// Catalog에서 자동 시작 여부를 판단할 시작 조건입니다.
-        /// </summary>
         public TutorialAuthoringCondition StartCondition => startCondition;
-
-        /// <summary>
-        /// 순차 실행할 튜토리얼 Step 목록입니다.
-        /// </summary>
+        public List<TutorialAuthoringGuide> Guides => guides;
         public List<TutorialAuthoringStep> Steps => steps;
 
         /// <summary>
-        /// 현재 제작 데이터를 런타임 Tutorial Definition DTO로 변환합니다.
+        /// 현재 제작 데이터를 런타임 튜토리얼 정의로 변환합니다.
         /// </summary>
-        /// <returns>런타임 JSON에 저장할 튜토리얼 정의입니다.</returns>
         public TutorialDefinition ToRuntimeDefinition()
         {
             EnsureDefaults();
@@ -117,21 +56,13 @@ namespace GGemCo2DTutorialEditor
             {
                 uid = uid,
                 title = string.IsNullOrWhiteSpace(title) ? null : title.Trim(),
-                steps = new List<TutorialStepDefinition>(),
             };
 
             for (int i = 0; i < steps.Count; i++)
             {
-                TutorialAuthoringStep step = steps[i];
-                if (step == null)
+                if (steps[i] != null)
                 {
-                    continue;
-                }
-
-                TutorialStepDefinition runtimeStep = step.ToRuntimeDefinition();
-                if (runtimeStep != null)
-                {
-                    definition.steps.Add(runtimeStep);
+                    definition.steps.Add(steps[i].ToRuntimeDefinition());
                 }
             }
 
@@ -139,9 +70,8 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// 새 Step을 추가하고 기본 UID를 자동으로 부여합니다.
+        /// 다음 사용 가능한 UID로 새 단계를 추가합니다.
         /// </summary>
-        /// <returns>추가된 제작용 Step 데이터입니다.</returns>
         public TutorialAuthoringStep AddStep()
         {
             EnsureDefaults();
@@ -151,37 +81,28 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// 제작 중 잘못 입력될 수 있는 null 목록과 비어 있는 기본값을 보정합니다.
+        /// null 목록과 잘못된 기본값을 안전한 제작 상태로 보정합니다.
         /// </summary>
         public void EnsureDefaults()
         {
-            if (startCondition == null)
-            {
-                startCondition = TutorialAuthoringCondition.CreateDefault();
-            }
-            else
-            {
-                startCondition.EnsureDefaults();
-            }
-
-            if (steps == null)
-            {
-                steps = new List<TutorialAuthoringStep>();
-            }
+            startCondition ??= TutorialAuthoringCondition.CreateDefault();
+            startCondition.EnsureDefaults();
+            guides ??= new List<TutorialAuthoringGuide>();
+            steps ??= new List<TutorialAuthoringStep>();
 
             for (int i = steps.Count - 1; i >= 0; i--)
             {
-                TutorialAuthoringStep step = steps[i];
-                if (step == null)
+                if (steps[i] == null)
                 {
                     steps.RemoveAt(i);
-                    continue;
                 }
-
-                step.EnsureDefaults(i + 1);
+                else
+                {
+                    steps[i].EnsureDefaults(i + 1);
+                }
             }
 
-            if (steps.Count <= 0)
+            if (steps.Count == 0)
             {
                 steps.Add(TutorialAuthoringStep.CreateDefault(1));
             }
@@ -192,30 +113,19 @@ namespace GGemCo2DTutorialEditor
             }
         }
 
-        /// <summary>
-        /// Inspector 값이 변경될 때 기본값을 즉시 보정합니다.
-        /// </summary>
         private void OnValidate()
         {
             EnsureDefaults();
         }
 
-        /// <summary>
-        /// 현재 Step 목록에서 사용하지 않는 다음 UID를 계산합니다.
-        /// </summary>
-        /// <returns>새 Step에 사용할 UID입니다.</returns>
         private int GetNextStepUid()
         {
             int maxUid = 0;
-            if (steps != null)
+            for (int i = 0; i < steps.Count; i++)
             {
-                for (int i = 0; i < steps.Count; i++)
+                if (steps[i] != null)
                 {
-                    TutorialAuthoringStep step = steps[i];
-                    if (step != null && step.Uid > maxUid)
-                    {
-                        maxUid = step.Uid;
-                    }
+                    maxUid = Mathf.Max(maxUid, steps[i].Uid);
                 }
             }
 

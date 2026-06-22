@@ -6,20 +6,15 @@ using UnityEngine;
 namespace GGemCo2DTutorial
 {
     /// <summary>
-    /// Tutorial 패키지 외부에서 UI, Quest, 기능 잠금 등의 액션을 처리하는 확장 포트입니다.
+    /// 튜토리얼 표준 액션을 실제 게임 기능에 연결하는 확장 포트입니다.
     /// </summary>
     public interface ITutorialActionHandler
     {
-        /// <summary>
-        /// 지정한 튜토리얼 액션을 처리합니다.
-        /// </summary>
-        /// <param name="context">현재 튜토리얼과 단계 정보가 포함된 액션 컨텍스트입니다.</param>
-        /// <returns>액션을 처리했으면 true를 반환합니다.</returns>
         bool TryExecute(in TutorialActionContext context);
     }
 
     /// <summary>
-    /// 외부 액션 처리기에 전달되는 실행 컨텍스트입니다.
+    /// 외부 액션 처리기에 전달하는 현재 튜토리얼 실행 정보입니다.
     /// </summary>
     public readonly struct TutorialActionContext
     {
@@ -39,28 +34,21 @@ namespace GGemCo2DTutorial
     }
 
     /// <summary>
-    /// 외부 Tutorial 액션 처리기를 등록하고 안전하게 순회하는 레지스트리입니다.
+    /// 외부 튜토리얼 액션 처리기를 등록하고 안전하게 순회합니다.
     /// </summary>
     public static class TutorialActionHandlerRegistry
     {
         private static readonly List<ITutorialActionHandler> Handlers = new List<ITutorialActionHandler>();
+        private static readonly List<ITutorialActionHandler> Snapshot = new List<ITutorialActionHandler>();
 
-        /// <summary>
-        /// 액션 처리기를 중복 없이 등록합니다.
-        /// </summary>
         public static void Register(ITutorialActionHandler handler)
         {
-            if (handler == null || Handlers.Contains(handler))
+            if (handler != null && !Handlers.Contains(handler))
             {
-                return;
+                Handlers.Add(handler);
             }
-
-            Handlers.Add(handler);
         }
 
-        /// <summary>
-        /// 등록된 액션 처리기를 해제합니다.
-        /// </summary>
         public static void Unregister(ITutorialActionHandler handler)
         {
             if (handler != null)
@@ -69,18 +57,15 @@ namespace GGemCo2DTutorial
             }
         }
 
-        /// <summary>
-        /// 등록된 처리기에 액션을 전달합니다.
-        /// 처리기 내부에서 레지스트리가 변경되어도 순회가 깨지지 않도록 역순으로 접근합니다.
-        /// </summary>
         internal static bool Execute(in TutorialActionContext context)
         {
             bool handled = false;
-            // 처리기 실행 중 등록/해제가 발생해도 현재 순회를 안정적으로 유지합니다.
-            ITutorialActionHandler[] snapshot = Handlers.ToArray();
-            for (int i = snapshot.Length - 1; i >= 0; i--)
+            // 처리 중 등록 상태가 바뀌어도 순회를 안정적으로 유지하도록 재사용 스냅샷을 사용합니다.
+            Snapshot.Clear();
+            Snapshot.AddRange(Handlers);
+            for (int i = Snapshot.Count - 1; i >= 0; i--)
             {
-                ITutorialActionHandler handler = snapshot[i];
+                ITutorialActionHandler handler = Snapshot[i];
                 if (handler == null)
                 {
                     continue;
@@ -96,6 +81,7 @@ namespace GGemCo2DTutorial
                 }
             }
 
+            Snapshot.Clear();
             return handled;
         }
 
@@ -103,60 +89,53 @@ namespace GGemCo2DTutorial
         private static void Reset()
         {
             Handlers.Clear();
+            Snapshot.Clear();
         }
     }
 
     /// <summary>
-    /// 현재 튜토리얼 단계가 허용한 입력 액션 목록을 보관하고 차단 여부를 제공합니다.
+    /// 현재 튜토리얼 단계에서 허용하는 입력 마스크를 보관합니다.
     /// </summary>
     public sealed class TutorialInputBlockPolicy
     {
-        private readonly HashSet<string> _allowedActionIds = new HashSet<string>();
-
-        /// <summary>
-        /// 입력 제한이 활성화되어 있는지 여부입니다.
-        /// </summary>
         public bool IsActive { get; private set; }
+        public TutorialInputActionMask AllowedMask { get; private set; }
 
         /// <summary>
-        /// 지정한 입력 액션이 현재 튜토리얼 정책에 의해 차단되는지 확인합니다.
+        /// 지정한 표준 입력이 현재 정책에서 차단되는지 확인합니다.
         /// </summary>
-        /// <param name="actionId">확인할 입력 액션 식별자입니다.</param>
-        /// <returns>입력 제한이 활성화되어 있고 허용 목록에 없으면 true입니다.</returns>
-        public bool IsBlocked(string actionId)
+        public bool IsBlocked(TutorialInputActionType inputAction)
         {
-            return IsActive &&
-                   (string.IsNullOrWhiteSpace(actionId) || !_allowedActionIds.Contains(actionId));
+            return IsActive && !Contains(AllowedMask, inputAction);
         }
 
-        /// <summary>
-        /// 지정한 입력 액션만 허용하도록 정책을 갱신합니다.
-        /// </summary>
-        internal void BlockExcept(string[] allowedActionIds)
+        internal void BlockExcept(TutorialInputActionMask allowedMask)
         {
-            _allowedActionIds.Clear();
-            if (allowedActionIds != null)
-            {
-                for (int i = 0; i < allowedActionIds.Length; i++)
-                {
-                    string actionId = allowedActionIds[i];
-                    if (!string.IsNullOrWhiteSpace(actionId))
-                    {
-                        _allowedActionIds.Add(actionId);
-                    }
-                }
-            }
-
+            AllowedMask = allowedMask;
             IsActive = true;
         }
 
-        /// <summary>
-        /// 모든 튜토리얼 입력 제한을 해제합니다.
-        /// </summary>
         internal void Clear()
         {
-            _allowedActionIds.Clear();
+            AllowedMask = TutorialInputActionMask.None;
             IsActive = false;
+        }
+
+        private static bool Contains(
+            TutorialInputActionMask mask,
+            TutorialInputActionType inputAction)
+        {
+            TutorialInputActionMask value = inputAction switch
+            {
+                TutorialInputActionType.Move => TutorialInputActionMask.Move,
+                TutorialInputActionType.Jump => TutorialInputActionMask.Jump,
+                TutorialInputActionType.Guard => TutorialInputActionMask.Guard,
+                TutorialInputActionType.Attack => TutorialInputActionMask.Attack,
+                TutorialInputActionType.Dash => TutorialInputActionMask.Dash,
+                TutorialInputActionType.Interaction => TutorialInputActionMask.Interaction,
+                _ => TutorialInputActionMask.None,
+            };
+            return value != TutorialInputActionMask.None && (mask & value) != 0;
         }
     }
 }

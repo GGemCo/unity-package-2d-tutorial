@@ -1,4 +1,4 @@
-﻿using GGemCo2DCore;
+using GGemCo2DCore;
 
 namespace GGemCo2DTutorial
 {
@@ -12,31 +12,36 @@ namespace GGemCo2DTutorial
     /// </remarks>
     public static class ConfigAddressableKeyTutorial
     {
-         private const string JsonExtension = ".json";
-         
+        private const string JsonExtension = ".json";
+
         /// <summary>
         /// Tutorial JSON 에셋 키 접두사입니다.
         /// </summary>
         public const string Tutorial = ConfigDefine.NameSDK + "_Tutorial";
-        
-         /// <summary>
-         /// 지정한 Tutorial UID에 대응되는 Tutorial JSON Addressables 주소를 반환합니다.
-         /// </summary>
-         /// <param name="uid">Tutorial UID입니다.</param>
-         /// <returns>규칙 기반 Addressables 주소입니다. UID가 유효하지 않으면 null입니다.</returns>
-         public static string GetDefinitionAddressableKey(int uid)
-         {
-             return uid > 0 ? $"{Tutorial}_{uid}" : null;
-         }
-         
-         /// <summary>
-         /// 지정한 Tutorial UID에 대응되는 Tutorial JSON 파일명을 반환합니다.
-         /// </summary>
-         /// <param name="uid">Tutorial UID입니다.</param>
-         /// <returns>규칙 기반 Tutorial JSON 파일명입니다.</returns>
-         public static string GetDefinitionFileName(int uid)
-         {
-             return uid > 0 ? $"tutorial_{uid}{JsonExtension}" : null;
-         }
+
+        /// <summary>
+        /// 생성툴에서 구성한 가이드 Sprite 카탈로그의 Addressables 주소입니다.
+        /// </summary>
+        public const string GuideCatalog = Tutorial + "_GuideCatalog";
+
+        /// <summary>
+        /// 지정한 Tutorial UID에 대응되는 Tutorial JSON Addressables 주소를 반환합니다.
+        /// </summary>
+        /// <param name="uid">Tutorial UID입니다.</param>
+        /// <returns>규칙 기반 Addressables 주소입니다. UID가 유효하지 않으면 null입니다.</returns>
+        public static string GetDefinitionAddressableKey(int uid)
+        {
+            return uid > 0 ? $"{Tutorial}_{uid}" : null;
+        }
+
+        /// <summary>
+        /// 지정한 Tutorial UID에 대응되는 Tutorial JSON 파일명을 반환합니다.
+        /// </summary>
+        /// <param name="uid">Tutorial UID입니다.</param>
+        /// <returns>규칙 기반 Tutorial JSON 파일명입니다.</returns>
+        public static string GetDefinitionFileName(int uid)
+        {
+            return uid > 0 ? $"tutorial_{uid}{JsonExtension}" : null;
+        }
     }
 }

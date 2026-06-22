@@ -40,6 +40,16 @@ namespace GGemCo2DTutorialEditor
                     _asset.Uid);
             }
 
+            if (result.Succeeded)
+            {
+                result = TutorialTableExporter.Export(_asset);
+            }
+
+            if (result.Succeeded)
+            {
+                result = TutorialGuideCatalogExporter.Export(_asset);
+            }
+
             ApplyExportResult(result);
         }
 

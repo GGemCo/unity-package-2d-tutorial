@@ -142,8 +142,10 @@ namespace GGemCo2DTutorialEditor
         /// <returns>이벤트 발행 결과입니다.</returns>
         public static TutorialPlayModeTestResult PublishEvent(
             TutorialEventType eventType,
-            string key,
+            int targetUid,
+            TutorialInputActionType inputAction,
             int intValue,
+            float floatValue,
             int amount)
         {
             if (!EditorApplication.isPlaying)
@@ -156,9 +158,15 @@ namespace GGemCo2DTutorialEditor
                 return TutorialPlayModeTestResult.Failure("발행할 이벤트 타입을 선택하십시오.");
             }
 
-            TutorialEventBus.Publish(new TutorialGameEvent(eventType, key, intValue, amount));
+            TutorialEventBus.Publish(new TutorialGameEvent(
+                eventType,
+                targetUid,
+                inputAction,
+                intValue,
+                floatValue,
+                amount));
             return TutorialPlayModeTestResult.Success(
-                $"Tutorial 이벤트 발행: type={eventType}, key={key}, intValue={intValue}, amount={Math.Max(1, amount)}");
+                $"Tutorial 이벤트 발행: type={eventType}, targetUid={targetUid}, input={inputAction}, intValue={intValue}, amount={Math.Max(1, amount)}");
         }
 
         /// <summary>
@@ -166,7 +174,8 @@ namespace GGemCo2DTutorialEditor
         /// </summary>
         /// <param name="actionId">검사할 입력 액션 ID입니다.</param>
         /// <returns>입력 차단 검사 결과입니다.</returns>
-        public static TutorialPlayModeTestResult CheckInputBlocked(string actionId)
+        public static TutorialPlayModeTestResult CheckInputBlocked(
+            TutorialInputActionType inputAction)
         {
             if (!EditorApplication.isPlaying)
             {
@@ -179,9 +188,9 @@ namespace GGemCo2DTutorialEditor
                 return TutorialPlayModeTestResult.Failure("TutorialInputBlockPolicy가 준비되지 않았습니다.");
             }
 
-            bool blocked = manager.InputBlockPolicy.IsBlocked(actionId);
+            bool blocked = manager.InputBlockPolicy.IsBlocked(inputAction);
             return TutorialPlayModeTestResult.Success(
-                $"입력 액션 '{actionId}' 차단 여부: {(blocked ? "차단" : "허용")}, policyActive={manager.InputBlockPolicy.IsActive}");
+                $"입력 액션 '{inputAction}' 차단 여부: {(blocked ? "차단" : "허용")}, policyActive={manager.InputBlockPolicy.IsActive}");
         }
 
         /// <summary>

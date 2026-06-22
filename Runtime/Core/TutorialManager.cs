@@ -217,18 +217,7 @@ namespace GGemCo2DTutorial
             TutorialConditionDefinition condition,
             in TutorialGameEvent tutorialEvent)
         {
-            if (condition == null || condition.type != tutorialEvent.Type)
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(condition.key) &&
-                !string.Equals(condition.key, tutorialEvent.Key, StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            return condition.intValue <= 0 || condition.intValue == tutorialEvent.IntValue;
+            return TutorialConditionMatcher.Matches(condition, tutorialEvent);
         }
     }
 }

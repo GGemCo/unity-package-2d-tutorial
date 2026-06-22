@@ -4,98 +4,89 @@ using UnityEngine;
 namespace GGemCo2DTutorial
 {
     /// <summary>
-    /// 튜토리얼 조건 판정에 사용되는 값 타입 이벤트입니다.
+    /// 튜토리얼 조건 판정에 사용하는 값 타입 게임 이벤트입니다.
     /// </summary>
     public readonly struct TutorialGameEvent
     {
         public readonly TutorialEventType Type;
-        public readonly string Key;
+        public readonly int TargetUid;
+        public readonly TutorialInputActionType InputAction;
         public readonly int IntValue;
+        public readonly float FloatValue;
         public readonly int Amount;
 
         /// <summary>
-        /// 튜토리얼 게임 이벤트를 생성합니다.
+        /// UID와 enum 기반 튜토리얼 게임 이벤트를 생성합니다.
         /// </summary>
-        /// <param name="type">이벤트 종류입니다.</param>
-        /// <param name="key">입력 액션, 창, 사용자 정의 이벤트 식별자입니다.</param>
-        /// <param name="intValue">맵, 몬스터, Quest 등 정수 식별자입니다.</param>
-        /// <param name="amount">조건 진행에 더할 수량입니다.</param>
         public TutorialGameEvent(
             TutorialEventType type,
-            string key = null,
+            int targetUid = 0,
+            TutorialInputActionType inputAction = TutorialInputActionType.None,
             int intValue = 0,
+            float floatValue = 0f,
             int amount = 1)
         {
             Type = type;
-            Key = key;
+            TargetUid = targetUid;
+            InputAction = inputAction;
             IntValue = intValue;
+            FloatValue = floatValue;
             Amount = amount > 0 ? amount : 1;
         }
     }
 
     /// <summary>
-    /// 하위 패키지 참조 없이 외부 시스템의 상태 변화를 Tutorial Runtime에 전달하는 이벤트 버스입니다.
+    /// 상위 패키지의 상태 변화를 튜토리얼 런타임에 전달하는 이벤트 버스입니다.
     /// </summary>
     public static class TutorialEventBus
     {
-        /// <summary>
-        /// 튜토리얼 런타임이 구독하는 게임 이벤트입니다.
-        /// </summary>
         public static event Action<TutorialGameEvent> Published;
 
         /// <summary>
         /// 튜토리얼 게임 이벤트를 발행합니다.
         /// </summary>
-        /// <param name="tutorialEvent">발행할 이벤트입니다.</param>
         public static void Publish(in TutorialGameEvent tutorialEvent)
         {
             Published?.Invoke(tutorialEvent);
         }
 
         /// <summary>
-        /// 입력 액션 수행 이벤트를 발행합니다.
+        /// 표준 입력 액션 수행 이벤트를 발행합니다.
         /// </summary>
-        /// <param name="actionId">Input Action 또는 프로젝트 입력 식별자입니다.</param>
-        public static void PublishInputAction(string actionId)
+        public static void PublishInputAction(TutorialInputActionType inputAction)
         {
-            if (string.IsNullOrWhiteSpace(actionId))
-            {
-                return;
-            }
-
-            Publish(new TutorialGameEvent(TutorialEventType.InputAction, actionId));
-        }
-
-        /// <summary>
-        /// UI 창 열림 이벤트를 발행합니다.
-        /// </summary>
-        /// <param name="windowKey">창 UID 문자열 또는 안정적인 창 식별자입니다.</param>
-        public static void PublishWindowOpened(string windowKey)
-        {
-            if (string.IsNullOrWhiteSpace(windowKey))
-            {
-                return;
-            }
-
-            Publish(new TutorialGameEvent(TutorialEventType.OpenWindow, windowKey));
-        }
-
-        /// <summary>
-        /// Quest 상태 변경 이벤트를 발행합니다.
-        /// Quest 패키지 또는 게임 상위 계층의 Adapter에서 호출합니다.
-        /// </summary>
-        /// <param name="questUid">상태가 변경된 Quest UID입니다.</param>
-        /// <param name="completed">완료 상태이면 true, 시작 상태이면 false입니다.</param>
-        public static void PublishQuestState(int questUid, bool completed)
-        {
-            if (questUid <= 0)
+            if (inputAction == TutorialInputActionType.None)
             {
                 return;
             }
 
             Publish(new TutorialGameEvent(
-                completed ? TutorialEventType.QuestCompleted : TutorialEventType.QuestStarted,
-                intValue: questUid));
+                TutorialEventType.InputAction,
+                inputAction: inputAction));
+        }
+
+        /// <summary>
+        /// UI 창 열림 이벤트를 Window 테이블 UID로 발행합니다.
+        /// </summary>
+        public static void PublishWindowOpened(int windowUid)
+        {
+            if (windowUid > 0)
+            {
+                Publish(new TutorialGameEvent(TutorialEventType.OpenWindow, windowUid));
+            }
+        }
+
+        /// <summary>
+        /// 퀘스트 시작 또는 완료 이벤트를 Quest UID로 발행합니다.
+        /// </summary>
+        public static void PublishQuestState(int questUid, bool completed)
+        {
+            if (questUid > 0)
+            {
+                Publish(new TutorialGameEvent(
+                    completed ? TutorialEventType.QuestCompleted : TutorialEventType.QuestStarted,
+                    questUid));
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

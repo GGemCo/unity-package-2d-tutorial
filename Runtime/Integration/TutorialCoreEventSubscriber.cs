@@ -43,14 +43,14 @@ namespace GGemCo2DTutorial
         {
             TutorialEventBus.Publish(new TutorialGameEvent(
                 TutorialEventType.EnterMap,
-                intValue: eventData.MapUid));
+                targetUid: eventData.MapUid));
         }
 
         private static void HandleMonsterKilled(MonsterKilledEventData eventData)
         {
             TutorialEventBus.Publish(new TutorialGameEvent(
                 TutorialEventType.KillMonster,
-                intValue: eventData.monsterUid));
+                targetUid: eventData.monsterUid));
         }
     }
 }
