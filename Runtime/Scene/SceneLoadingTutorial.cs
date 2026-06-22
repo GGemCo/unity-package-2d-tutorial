@@ -57,6 +57,20 @@ namespace GGemCo2DTutorial
                 tablePack: ConfigAddressableTableTutorial.TablePackTutorial,
                 fallbackTables: ConfigAddressableTableTutorial.All);
             sender.Register(stepTable);
+
+            // Tutorial 전용 저장 파일은 Core 저장 파일 로드 이후에 읽어
+            // 기존 tutorial.progress 확장 섹션을 하위 호환 폴백으로 사용할 수 있게 합니다.
+            SaveDataLoaderTutorial saveDataLoader =
+                CompatObjectFind.FindFirst<SaveDataLoaderTutorial>() ??
+                new GameObject(nameof(SaveDataLoaderTutorial))
+                    .AddComponent<SaveDataLoaderTutorial>();
+            var saveDataStep = new SaveDataLoadStep(
+                id: "core.savedata.tutorial",
+                order: 383,
+                localizedKey:
+                    LocalizationConstants.Keys.Loading.TextTypeSaveData(),
+                saveDataLoader: saveDataLoader);
+            sender.Register(saveDataStep);
         }
     }
 }

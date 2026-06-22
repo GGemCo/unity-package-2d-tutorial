@@ -9,7 +9,7 @@
 - Core 맵 입장 및 몬스터 처치 이벤트 기본 연동
 - 입력 액션, UI 창, Quest 상태 등 외부 패키지 이벤트의 느슨한 연동
 - 입력 허용 목록 기반 차단 정책
-- Core `SaveRegistry`를 이용한 `tutorial.progress` 저장 확장
+- `SaveDataTutorial.json` 전용 파일 저장과 Core `tutorial.progress` 하위 호환 복원
 - Tutorial JSON 검증 EditorWindow와 샘플 데이터
 
 ## 예제

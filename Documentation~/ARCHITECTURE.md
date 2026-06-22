@@ -28,6 +28,11 @@ TimingBattle 타입을 직접 참조하지 않습니다.
   - TextAsset 파싱 후 Addressables 핸들을 즉시 해제합니다.
 - `TutorialData`
   - Core `SaveRegistry`의 `tutorial.progress` 확장 섹션을 사용합니다.
+- `SaveDataLoaderTutorial`
+  - 로딩 씬에서 선택 슬롯의 `SaveDataTutorial.json`을 읽고 백업 복구를 적용합니다.
+- `SaveDataManagerTutorial`
+  - Tutorial 진행 데이터를 전용 파일로 저장하며, 전용 파일이 없으면 기존
+    Core `tutorial.progress` 확장 섹션을 하위 호환 폴백으로 복원합니다.
 - `TutorialEventBus`
   - 외부 패키지의 입력, UI, Quest 상태와 사용자 정의 이벤트를 전달합니다.
 - `TutorialActionHandlerRegistry`
@@ -98,6 +103,7 @@ TutorialPackageManager.Instance?.TutorialManager?.InputBlockPolicy.IsBlocked(act
 ## 저장 호환성
 
 - 저장 섹션 키: `tutorial.progress`
+- 전용 저장 파일: `SaveDataTutorial.json`
 - 기존 Core 저장 구조는 변경하지 않습니다.
-- 신규 패키지이므로 과거 Tutorial 저장 데이터 마이그레이션은 없습니다.
+- 전용 파일이 없는 기존 저장 슬롯은 Core의 `tutorial.progress` 데이터를 복원합니다.
 - 향후 필드를 변경할 때는 `TutorialProgressSnapshot`의 하위 호환성을 유지해야 합니다.

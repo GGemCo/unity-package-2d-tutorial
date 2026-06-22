@@ -24,6 +24,11 @@ namespace GGemCo2DTutorial
         /// </summary>
         public TutorialData TutorialData { get; private set; }
 
+        /// <summary>
+        /// Tutorial 전용 저장 파일의 복원과 저장을 담당하는 매니저입니다.
+        /// </summary>
+        public SaveDataManagerTutorial SaveDataManagerTutorial { get; private set; }
+
         private readonly TutorialCoreEventSubscriber _coreEventSubscriber =
             new TutorialCoreEventSubscriber();
         private Coroutine _initializeCoroutine;
@@ -82,8 +87,45 @@ namespace GGemCo2DTutorial
             }
 
             _sceneGame = SceneGame.Instance;
-            TutorialData = new TutorialData();
-            TutorialData.Register();
+            GameObject managerContainer = GameObject.Find("Managers");
+            if (managerContainer == null)
+            {
+                GcLogger.LogError(
+                    "Tutorial 저장 매니저를 생성할 Managers 오브젝트가 없습니다.");
+                _initializeCoroutine = null;
+                Destroy(gameObject);
+                yield break;
+            }
+
+            SaveDataManagerTutorial =
+                _sceneGame.CreateManager<SaveDataManagerTutorial>(
+                    managerContainer);
+            SaveDataManagerTutorial.Initialize(new GameInitContext(
+                _sceneGame,
+                TableLoaderManager.Instance,
+                AddressableLoaderSettings.Instance));
+            if (!SaveDataManagerTutorial.IsInitialized)
+            {
+                GcLogger.LogError(
+                    "Tutorial 저장 매니저를 초기화하지 못했습니다.");
+                Destroy(SaveDataManagerTutorial.gameObject);
+                SaveDataManagerTutorial = null;
+                _initializeCoroutine = null;
+                Destroy(gameObject);
+                yield break;
+            }
+
+            TutorialData = SaveDataManagerTutorial.Tutorial;
+            if (TutorialData == null)
+            {
+                GcLogger.LogError(
+                    "Tutorial 저장 데이터를 초기화하지 못했습니다.");
+                Destroy(SaveDataManagerTutorial.gameObject);
+                SaveDataManagerTutorial = null;
+                _initializeCoroutine = null;
+                Destroy(gameObject);
+                yield break;
+            }
 
             TutorialManager = new TutorialManager(TutorialData);
             ITutorialCatalogProvider tableCatalogProvider = CreateTableCatalogProvider();
@@ -156,9 +198,15 @@ namespace GGemCo2DTutorial
 
             _coreEventSubscriber.Unsubscribe();
             TutorialManager?.Dispose();
-            TutorialData?.Unregister();
+
+            if (SaveDataManagerTutorial != null)
+            {
+                Destroy(SaveDataManagerTutorial.gameObject);
+            }
+
             TutorialManager = null;
             TutorialData = null;
+            SaveDataManagerTutorial = null;
             _sceneGame = null;
 
             if (Instance == this)
