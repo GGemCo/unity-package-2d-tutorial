@@ -67,6 +67,10 @@ namespace GGemCo2DTutorialEditor
             {
                 targetUid = 0;
             }
+            else if (type == TutorialEventType.CombatStarted)
+            {
+                targetUid = 0;
+            }
 
             floatValue = Mathf.Max(0f, floatValue);
             requiredCount = Mathf.Max(1, requiredCount);

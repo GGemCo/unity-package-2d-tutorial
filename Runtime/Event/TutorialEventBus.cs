@@ -89,6 +89,14 @@ namespace GGemCo2DTutorial
             }
         }
 
+        /// <summary>
+        /// 플레이어가 비전투 상태에서 전투 상태로 진입했음을 발행합니다.
+        /// </summary>
+        public static void PublishCombatStarted()
+        {
+            Publish(new TutorialGameEvent(TutorialEventType.CombatStarted));
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset()
         {

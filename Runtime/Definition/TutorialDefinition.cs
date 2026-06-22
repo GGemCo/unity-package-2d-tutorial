@@ -18,6 +18,7 @@ namespace GGemCo2DTutorial
         QuestCompleted = 7,
         AutoMoveDistanceReached = 8,
         GuideClicked = 9,
+        CombatStarted = 10,
     }
 
     /// <summary>

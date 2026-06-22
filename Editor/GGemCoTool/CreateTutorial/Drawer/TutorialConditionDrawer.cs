@@ -39,6 +39,11 @@ namespace GGemCo2DTutorialEditor
                         "현재 표시 중인 단일 가이드 UI의 클릭을 기다립니다.",
                         MessageType.Info);
                     break;
+                case TutorialEventType.CombatStarted:
+                    EditorGUILayout.HelpBox(
+                        "플레이어가 비전투 상태에서 전투 상태로 진입할 때 완료됩니다.",
+                        MessageType.Info);
+                    break;
                 case TutorialEventType.InputAction:
                     EditorGUILayout.PropertyField(
                         conditionProperty.FindPropertyRelative("inputAction"),

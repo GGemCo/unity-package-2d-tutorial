@@ -54,6 +54,12 @@ UI 계층:
 TutorialEventBus.PublishWindowOpened(1001);
 ```
 
+전투 시작 계층:
+
+```csharp
+TutorialEventBus.PublishCombatStarted();
+```
+
 Quest Adapter:
 
 ```csharp
