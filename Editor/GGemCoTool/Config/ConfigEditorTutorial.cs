@@ -1,4 +1,4 @@
-using GGemCo2DCore;
+using GGemCo2DCoreEditor;
 
 namespace GGemCo2DTutorialEditor
 {
@@ -43,14 +43,14 @@ namespace GGemCo2DTutorialEditor
         /// <summary>
         /// Tutorial 툴 메뉴의 최상위 경로 접두사입니다.
         /// </summary>
-        private const string NameToolGGemCoTutorial = ConfigDefine.NameSDK+"ToolTutorial/";
+        private const string NameToolGGemCoTutorial = GGemCoToolMenu.Tutorial;
 
         // 기본 셋팅하기
 
         /// <summary>
         /// 기본 셋팅 메뉴(설정하기)의 경로 접두사입니다.
         /// </summary>
-        private const string NameToolSettings = NameToolGGemCoTutorial + "설정하기/";
+        private const string NameToolSettings = NameToolGGemCoTutorial + GGemCoToolMenu.Settings;
 
         /// <summary>
         /// "자동 셋팅하기" 메뉴 경로입니다.
@@ -70,7 +70,7 @@ namespace GGemCo2DTutorialEditor
         /// <summary>
         /// 개발툴 메뉴의 경로 접두사입니다.
         /// </summary>
-        private const string NameToolDevelopment = NameToolGGemCoTutorial + "개발툴/";
+        private const string NameToolDevelopment = NameToolGGemCoTutorial + GGemCoToolMenu.Development;
 
         public const string NameToolTutorial = NameToolDevelopment + "튜토리얼 생성툴";
 
@@ -80,19 +80,19 @@ namespace GGemCo2DTutorialEditor
         /// <remarks>
         /// NOTE: 현재 문자열이 "테스트툴"로 되어 있는데, 의도한 표기가 "테스트툴"이라면 수정이 필요합니다.
         /// </remarks>
-        private const string NameToolTest = NameToolGGemCoTutorial + "테스트툴/";
+        private const string NameToolTest = NameToolGGemCoTutorial + GGemCoToolMenu.Test;
         
         // 디버그
-        private const string NameToolDebug = NameToolGGemCoTutorial + "디버그툴/";
+        private const string NameToolDebug = NameToolGGemCoTutorial + GGemCoToolMenu.Debug;
 
         /// <summary>
         /// 기타 메뉴의 경로 접두사입니다.
         /// </summary>
-        private const string NameToolEtc = NameToolGGemCoTutorial + "기타/";
+        private const string NameToolEtc = NameToolGGemCoTutorial + GGemCoToolMenu.Etc;
 
         /// <summary>
         /// 패키지 내 Tutorial 에디터에서 참조하는 기본 경로(패키지 루트)입니다.
         /// </summary>
-        public const string PathPackageCore = "Packages/com.ggemco.2d.quest";
+        public const string PathPackageCore = "Packages/com.ggemco.2d.tutorial";
     }
 }
