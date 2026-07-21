@@ -94,7 +94,7 @@ namespace GGemCo2DTutorial
         /// <summary>
         /// 매니저가 제거될 때 Tutorial 저장 기여자 등록을 해제합니다.
         /// </summary>
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             Tutorial?.Unregister();
             Tutorial = null;

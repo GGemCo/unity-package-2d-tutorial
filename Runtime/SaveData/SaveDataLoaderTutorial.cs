@@ -101,7 +101,7 @@ namespace GGemCo2DTutorial
         /// <summary>
         /// 로더가 제거될 때 보관 중인 컨테이너와 싱글톤 참조를 정리합니다.
         /// </summary>
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             _saveDataContainer = null;
             if (Instance == this)

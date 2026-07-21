@@ -20,12 +20,12 @@ namespace GGemCo2DTutorialEditor
         private Vector2 _detailScrollPosition;
         private int _selectedStepIndex = -1;
         private int _playModeStartStepIndex;
-        private TutorialEventType _playModeEventType = TutorialEventType.InputAction;
+        // private TutorialEventType _playModeEventType = TutorialEventType.InputAction;
         private int _playModeEventTargetUid;
         private TutorialInputActionType _playModeInputAction;
         private int _playModeEventIntValue;
         private float _playModeEventFloatValue;
-        private int _playModeEventAmount = 1;
+        // private int _playModeEventAmount = 1;
         private Vector2 _playModeLogScrollPosition;
         private string _statusMessage = "Tutorial Authoring Asset을 선택하거나 생성하십시오.";
         private MessageType _statusType = MessageType.Info;
