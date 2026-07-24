@@ -1,3 +1,5 @@
+using GGemCo2DCoreEditor;
+using GGemCo2DTutorial;
 using UnityEditor;
 using UnityEngine;
 
@@ -66,15 +68,49 @@ namespace GGemCo2DTutorialEditor
 
             if (result.Succeeded)
             {
-                result = TutorialTableExporter.Export(_asset);
-            }
+                TutorialTableExportResult tableResult =
+                    TutorialTableExporter.Export(_asset);
+                if (!tableResult.Succeeded)
+                {
+                    result = TutorialExportResult.Failure(
+                        tableResult.Message);
+                }
+                else
+                {
+                    // TableEditor와 같은 공유 설정을 사용하되, tutorial.txt 바이트가 달라진 경우에만 pack을 요청합니다.
+                    TableEditorAutoPackResult autoPackResult =
+                        TableEditorAutoPackService.TryBuildIfEnabled(
+                            ConfigAddressableTableTutorial.Tutorial,
+                            tableResult.Changed);
+                    bool packFailed =
+                        autoPackResult.Status ==
+                        TableEditorAutoPackStatus.Failed;
+                    string autoPackMessage =
+                        autoPackResult.Status ==
+                        TableEditorAutoPackStatus.SkippedUnchanged
+                            ? string.Empty
+                            : $"\n{autoPackResult.Message}";
+                    string message =
+                        $"{tableResult.Message}\n{localizationResult.Message}{autoPackMessage}";
 
-            if (result.Succeeded)
-            {
-                result = TutorialExportResult.Success(
-                    $"{result.Message}\n{localizationResult.Message}",
-                    result.AssetPath,
-                    result.Asset);
+                    if (packFailed)
+                    {
+                        // JSON과 테이블 저장은 완료되었으므로 롤백하지 않고 pack 불일치 가능성을 경고로 전달합니다.
+                        Debug.LogWarning(
+                            $"[CreateTutorial] {autoPackResult.Message}");
+                        result = TutorialExportResult.Warning(
+                            message,
+                            tableResult.AssetPath,
+                            tableResult.Asset);
+                    }
+                    else
+                    {
+                        result = TutorialExportResult.Success(
+                            message,
+                            tableResult.AssetPath,
+                            tableResult.Asset);
+                    }
+                }
             }
 
             ApplyExportResult(result);
@@ -87,7 +123,11 @@ namespace GGemCo2DTutorialEditor
         private void ApplyExportResult(TutorialExportResult result)
         {
             _statusMessage = result.Message;
-            _statusType = result.Succeeded ? MessageType.Info : MessageType.Error;
+            _statusType = !result.Succeeded
+                ? MessageType.Error
+                : result.HasWarning
+                    ? MessageType.Warning
+                    : MessageType.Info;
 
             if (!result.Succeeded || result.Asset == null)
             {
