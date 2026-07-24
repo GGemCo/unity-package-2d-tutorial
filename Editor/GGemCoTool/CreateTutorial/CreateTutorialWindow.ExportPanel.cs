@@ -31,11 +31,27 @@ namespace GGemCo2DTutorialEditor
                 return;
             }
 
+            Undo.RecordObject(
+                _asset,
+                "Generate Tutorial Localization Keys");
+            if (TutorialGuideLocalizationKeyUtility.PrepareKeys(_asset))
+            {
+                MarkAssetDirty();
+            }
+
             _lastValidationResult = TutorialAuthoringValidator.Validate(_asset);
             if (!_lastValidationResult.IsValid)
             {
                 _statusMessage = _lastValidationResult.BuildErrorSummary();
                 _statusType = MessageType.Error;
+                return;
+            }
+
+            TutorialExportResult localizationResult =
+                TutorialGuideLocalizationExportService.Export(_asset);
+            if (!localizationResult.Succeeded)
+            {
+                ApplyExportResult(localizationResult);
                 return;
             }
 
@@ -51,6 +67,14 @@ namespace GGemCo2DTutorialEditor
             if (result.Succeeded)
             {
                 result = TutorialTableExporter.Export(_asset);
+            }
+
+            if (result.Succeeded)
+            {
+                result = TutorialExportResult.Success(
+                    $"{result.Message}\n{localizationResult.Message}",
+                    result.AssetPath,
+                    result.Asset);
             }
 
             ApplyExportResult(result);

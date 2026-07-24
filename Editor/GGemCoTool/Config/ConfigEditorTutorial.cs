@@ -91,5 +91,22 @@ namespace GGemCo2DTutorialEditor
         /// 패키지 내 Tutorial 에디터에서 참조하는 기본 경로(패키지 루트)입니다.
         /// </summary>
         public const string PathPackageCore = "Packages/com.ggemco.2d.tutorial";
+
+        /// <summary>
+        /// 튜토리얼 가이드 설명을 저장하는 String Table Collection 이름입니다.
+        /// </summary>
+        public const string LocalizationGuideCollectionName =
+            "GGemCo_Tutorial_Guide";
+
+        /// <summary>
+        /// 가이드 String Table Collection이 없을 때 생성할 프로젝트 경로입니다.
+        /// </summary>
+        public const string LocalizationGuideOutputPath =
+            "Assets/Localization/Tutorial";
+
+        /// <summary>
+        /// 튜토리얼 제작툴에서 입력하는 원문 Locale 코드입니다.
+        /// </summary>
+        public const string LocalizationGuideSourceLocaleCode = "ko";
     }
 }

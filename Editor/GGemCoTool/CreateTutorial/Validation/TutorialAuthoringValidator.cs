@@ -28,6 +28,9 @@ namespace GGemCo2DTutorialEditor
 
             ValidateCondition(result, "StartCondition", asset.StartCondition, true);
             HashSet<int> stepUids = new HashSet<int>();
+            HashSet<int> localizationUids = new HashSet<int>();
+            HashSet<string> localizationKeys =
+                new HashSet<string>(System.StringComparer.Ordinal);
             for (int i = 0; i < asset.Steps.Count; i++)
             {
                 TutorialAuthoringStep step = asset.Steps[i];
@@ -59,8 +62,18 @@ namespace GGemCo2DTutorialEditor
                         false);
                 }
 
-                ValidateActions(result, path, step.ActionsOnEnter);
-                ValidateActions(result, path, step.ActionsOnExit);
+                ValidateActions(
+                    result,
+                    path,
+                    step.ActionsOnEnter,
+                    localizationUids,
+                    localizationKeys);
+                ValidateActions(
+                    result,
+                    path,
+                    step.ActionsOnExit,
+                    localizationUids,
+                    localizationKeys);
             }
 
             return result;
@@ -107,10 +120,20 @@ namespace GGemCo2DTutorialEditor
             }
         }
 
+        /// <summary>
+        /// 액션별 필수 값과 전체 튜토리얼 범위의 가이드 Localization 식별자 중복을 검사합니다.
+        /// </summary>
+        /// <param name="result">검증 문제를 누적할 결과입니다.</param>
+        /// <param name="stepPath">오류 위치에 표시할 현재 단계 경로입니다.</param>
+        /// <param name="actions">검사할 진입 또는 종료 액션 목록입니다.</param>
+        /// <param name="localizationUids">이미 사용된 페이지 Localization UID 집합입니다.</param>
+        /// <param name="localizationKeys">이미 사용된 페이지 Localization 키 집합입니다.</param>
         private static void ValidateActions(
             TutorialAuthoringValidationResult result,
             string stepPath,
-            IReadOnlyList<TutorialAuthoringAction> actions)
+            IReadOnlyList<TutorialAuthoringAction> actions,
+            HashSet<int> localizationUids,
+            HashSet<string> localizationKeys)
         {
             for (int i = 0; i < actions.Count; i++)
             {
@@ -134,7 +157,6 @@ namespace GGemCo2DTutorialEditor
                     continue;
                 }
 
-                HashSet<string> localizationKeys = new HashSet<string>();
                 for (int pageIndex = 0; pageIndex < action.GuidePages.Count; pageIndex++)
                 {
                     TutorialAuthoringGuidePage page = action.GuidePages[pageIndex];
@@ -152,17 +174,45 @@ namespace GGemCo2DTutorialEditor
                             "가이드 페이지에는 Project 창의 Sprite를 연결해야 합니다.");
                     }
 
-                    if (string.IsNullOrWhiteSpace(page.DescriptionLocalizationKey))
+                    if (string.IsNullOrWhiteSpace(page.DescriptionSourceKo))
+                    {
+                        if (string.IsNullOrWhiteSpace(
+                                page.DescriptionLocalizationKey) ||
+                            TutorialGuideLocalizationKeyUtility.IsGeneratedKey(
+                                page.DescriptionLocalizationKey))
+                        {
+                            result.AddError(
+                                pagePath,
+                                "가이드 페이지에 한글 설명 원문을 입력해야 합니다.");
+                        }
+                        else
+                        {
+                            // 기존 수동 키 데이터는 JSON 호환성을 유지하고 자동 동기화만 건너뜁니다.
+                            result.AddWarning(
+                                pagePath,
+                                "기존 수동 Localization 키에 한글 원문이 없어 문자열 테이블 동기화에서 제외됩니다.");
+                        }
+                    }
+
+                    if (page.LocalizationUid > 0 &&
+                        !localizationUids.Add(page.LocalizationUid))
                     {
                         result.AddError(
                             pagePath,
-                            "가이드 페이지 설명 Localization 키를 입력해야 합니다.");
+                            "가이드 페이지 Localization UID가 중복되었습니다.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(page.DescriptionLocalizationKey))
+                    {
+                        result.AddInfo(
+                            pagePath,
+                            "Localization 키는 JSON Export 시 자동 생성됩니다.");
                     }
                     else if (!localizationKeys.Add(page.DescriptionLocalizationKey))
                     {
                         result.AddError(
                             pagePath,
-                            "같은 ShowGuide 액션에서 설명 Localization 키를 중복 사용할 수 없습니다.");
+                            "가이드 페이지 설명 Localization 키가 중복되었습니다.");
                     }
                 }
             }

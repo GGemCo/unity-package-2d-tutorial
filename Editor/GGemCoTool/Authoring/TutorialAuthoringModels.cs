@@ -85,10 +85,18 @@ namespace GGemCo2DTutorialEditor
     public sealed class TutorialAuthoringGuidePage
     {
         [SerializeField] private Sprite guideSprite;
-        [SerializeField] private string descriptionLocalizationKey;
+        [SerializeField, TextArea(2, 5)] private string descriptionSourceKo;
+        [SerializeField, HideInInspector] private int localizationUid;
+        [SerializeField, HideInInspector] private string descriptionLocalizationKey;
         [SerializeField, HideInInspector] private string guideSpriteAddress;
 
         public Sprite GuideSprite { get => guideSprite; set => guideSprite = value; }
+        public string DescriptionSourceKo
+        {
+            get => descriptionSourceKo;
+            set => descriptionSourceKo = Normalize(value);
+        }
+        public int LocalizationUid => localizationUid;
         public string DescriptionLocalizationKey
         {
             get => descriptionLocalizationKey;
@@ -114,6 +122,64 @@ namespace GGemCo2DTutorialEditor
                 guideSpriteAddress = Normalize(address),
                 descriptionLocalizationKey = Normalize(localizationKey),
             };
+        }
+
+        /// <summary>
+        /// Localization Export에서 사용할 영구 UID를 설정합니다.
+        /// 페이지 순서가 변경되어도 한번 발급된 UID는 유지합니다.
+        /// </summary>
+        /// <param name="value">튜토리얼 내부에서 고유한 양수 UID입니다.</param>
+        /// <returns>기존 값과 달라졌으면 true입니다.</returns>
+        public bool SetLocalizationUid(int value)
+        {
+            int normalized = Mathf.Max(0, value);
+            if (localizationUid == normalized)
+            {
+                return false;
+            }
+
+            localizationUid = normalized;
+            return true;
+        }
+
+        /// <summary>
+        /// 자동 생성하거나 기존 데이터에서 복원한 Localization 키를 저장합니다.
+        /// </summary>
+        /// <param name="value">문자열 테이블에서 사용할 엔트리 키입니다.</param>
+        /// <returns>기존 값과 달라졌으면 true입니다.</returns>
+        public bool SetDescriptionLocalizationKey(string value)
+        {
+            string normalized = Normalize(value);
+            if (string.Equals(
+                    descriptionLocalizationKey,
+                    normalized,
+                    StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            descriptionLocalizationKey = normalized;
+            return true;
+        }
+
+        /// <summary>
+        /// 같은 JSON 페이지에서 복원된 기존 Editor 전용 Localization 제작 값을 보존합니다.
+        /// 런타임 키가 다르면 서로 다른 페이지로 간주하여 원문과 UID를 복사하지 않습니다.
+        /// </summary>
+        /// <param name="source">기존 TutorialAuthoringAsset에 저장된 페이지입니다.</param>
+        public void RestoreLocalizationAuthoring(TutorialAuthoringGuidePage source)
+        {
+            if (source == null ||
+                !string.Equals(
+                    descriptionLocalizationKey,
+                    source.descriptionLocalizationKey,
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            localizationUid = Mathf.Max(0, source.localizationUid);
+            descriptionSourceKo = Normalize(source.descriptionSourceKo);
         }
 
         /// <summary>
@@ -152,6 +218,8 @@ namespace GGemCo2DTutorialEditor
         public void EnsureDefaults()
         {
             guideSpriteAddress = Normalize(guideSpriteAddress);
+            descriptionSourceKo = Normalize(descriptionSourceKo);
+            localizationUid = Mathf.Max(0, localizationUid);
             descriptionLocalizationKey = Normalize(descriptionLocalizationKey);
         }
 

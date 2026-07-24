@@ -44,7 +44,7 @@ namespace GGemCo2DTutorialEditor
                     }
 
                     EditorGUILayout.HelpBox(
-                        "각 페이지에 Sprite와 Tutorial Localization 키를 입력합니다. 위에서 아래 순서로 표시하며, 모든 페이지를 확인하면 닫기 버튼이 나타납니다.",
+                        "각 페이지에 Sprite와 한글 설명을 입력합니다. Localization 키는 JSON Export 시 자동 생성되며, 위에서 아래 순서로 페이지를 표시합니다.",
                         MessageType.Info);
                     break;
                 case TutorialActionType.HighlightUi:

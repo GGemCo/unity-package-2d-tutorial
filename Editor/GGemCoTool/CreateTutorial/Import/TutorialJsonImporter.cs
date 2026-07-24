@@ -196,6 +196,12 @@ namespace GGemCo2DTutorialEditor
             target.RequiredCount = source?.requiredCount ?? 1;
         }
 
+        /// <summary>
+        /// 런타임 액션을 제작 액션으로 변환하고 기존 Editor 전용 Sprite와 Localization 원문을 보존합니다.
+        /// </summary>
+        /// <param name="source">JSON에서 읽은 런타임 액션 목록입니다.</param>
+        /// <param name="target">변환 결과를 저장할 제작 액션 목록입니다.</param>
+        /// <param name="existing">동일 단계에 있던 기존 제작 액션 목록입니다.</param>
         private static void CopyActions(
             IReadOnlyList<TutorialActionDefinition> source,
             List<TutorialAuthoringAction> target,
@@ -235,22 +241,28 @@ namespace GGemCo2DTutorialEditor
                 {
                     TutorialGuidePageDefinition runtimePage =
                         runtimePages[pageIndex];
+                    TutorialAuthoringGuidePage existingPage =
+                        sourceAction.type == TutorialActionType.ShowGuide &&
+                        existingAction != null &&
+                        pageIndex < existingAction.GuidePages.Count
+                            ? existingAction.GuidePages[pageIndex]
+                            : null;
                     Sprite resolvedSprite =
                         TutorialGuideSpriteAddressableSynchronizer.ResolveSprite(
                             runtimePage.spriteAddress);
                     if (resolvedSprite == null &&
-                        sourceAction.type == TutorialActionType.ShowGuide &&
-                        existingAction != null &&
-                        pageIndex < existingAction.GuidePages.Count)
+                        existingPage != null)
                     {
-                        resolvedSprite =
-                            existingAction.GuidePages[pageIndex]?.GuideSprite;
+                        resolvedSprite = existingPage.GuideSprite;
                     }
 
-                    action.GuidePages.Add(TutorialAuthoringGuidePage.Create(
-                        resolvedSprite,
-                        runtimePage.spriteAddress,
-                        runtimePage.descriptionLocalizationKey));
+                    TutorialAuthoringGuidePage authoringPage =
+                        TutorialAuthoringGuidePage.Create(
+                            resolvedSprite,
+                            runtimePage.spriteAddress,
+                            runtimePage.descriptionLocalizationKey);
+                    authoringPage.RestoreLocalizationAuthoring(existingPage);
+                    action.GuidePages.Add(authoringPage);
                 }
 
                 target.Add(action);

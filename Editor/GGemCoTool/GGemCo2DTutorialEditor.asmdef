@@ -5,6 +5,8 @@
         "Unity.Addressables",
         "Unity.Addressables.Editor",
         "Unity.ResourceManager",
+        "Unity.Localization",
+        "Unity.Localization.Editor",
         "GGemCoScripts",
         "GGemCo2DTutorial",
         "GGemCo2DCoreEditor"
