@@ -79,6 +79,89 @@ namespace GGemCo2DTutorialEditor
     }
 
     /// <summary>
+    /// 생성툴에서 편집하는 가이드 이미지, Addressables 주소, 현지화 설명 키입니다.
+    /// </summary>
+    [Serializable]
+    public sealed class TutorialAuthoringGuidePage
+    {
+        [SerializeField] private Sprite guideSprite;
+        [SerializeField] private string descriptionLocalizationKey;
+        [SerializeField, HideInInspector] private string guideSpriteAddress;
+
+        public Sprite GuideSprite { get => guideSprite; set => guideSprite = value; }
+        public string DescriptionLocalizationKey
+        {
+            get => descriptionLocalizationKey;
+            set => descriptionLocalizationKey = Normalize(value);
+        }
+        public string GuideSpriteAddress => guideSpriteAddress;
+
+        /// <summary>
+        /// 이미지와 선택적인 기존 주소를 사용하여 새 제작 페이지를 생성합니다.
+        /// </summary>
+        /// <param name="sprite">표시할 가이드 Sprite입니다.</param>
+        /// <param name="address">기존 JSON 또는 Addressables에서 복원한 주소입니다.</param>
+        /// <param name="localizationKey">설명 문자열을 조회할 Localization 키입니다.</param>
+        /// <returns>초기화된 제작 페이지입니다.</returns>
+        public static TutorialAuthoringGuidePage Create(
+            Sprite sprite = null,
+            string address = null,
+            string localizationKey = null)
+        {
+            return new TutorialAuthoringGuidePage
+            {
+                guideSprite = sprite,
+                guideSpriteAddress = Normalize(address),
+                descriptionLocalizationKey = Normalize(localizationKey),
+            };
+        }
+
+        /// <summary>
+        /// Addressables 동기화 결과로 계산된 Sprite 런타임 주소를 저장합니다.
+        /// </summary>
+        /// <param name="address">새 런타임 주소입니다.</param>
+        /// <returns>기존 값과 달라졌으면 true입니다.</returns>
+        public bool SetGuideSpriteAddress(string address)
+        {
+            string normalized = Normalize(address);
+            if (string.Equals(guideSpriteAddress, normalized, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            guideSpriteAddress = normalized;
+            return true;
+        }
+
+        /// <summary>
+        /// 제작 페이지를 런타임 JSON 페이지 정의로 변환합니다.
+        /// </summary>
+        /// <returns>정규화된 런타임 페이지 정의입니다.</returns>
+        public TutorialGuidePageDefinition ToRuntimeDefinition()
+        {
+            return new TutorialGuidePageDefinition
+            {
+                spriteAddress = Normalize(guideSpriteAddress),
+                descriptionLocalizationKey = Normalize(descriptionLocalizationKey),
+            };
+        }
+
+        /// <summary>
+        /// 직렬화된 문자열 값의 앞뒤 공백을 제거하고 빈 값은 null로 정규화합니다.
+        /// </summary>
+        public void EnsureDefaults()
+        {
+            guideSpriteAddress = Normalize(guideSpriteAddress);
+            descriptionLocalizationKey = Normalize(descriptionLocalizationKey);
+        }
+
+        private static string Normalize(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+    }
+
+    /// <summary>
     /// 생성툴에서 편집하는 UID·enum 기반 튜토리얼 액션입니다.
     /// </summary>
     [Serializable]
@@ -89,7 +172,9 @@ namespace GGemCo2DTutorialEditor
         [SerializeField] private int intValue;
         [SerializeField] private TutorialInputActionMask inputMask;
         [SerializeField] private TutorialGameplayState gameplayState;
-        [SerializeField] private List<Sprite> guideSprites = new List<Sprite>();
+        [SerializeField] private List<TutorialAuthoringGuidePage> guidePages =
+            new List<TutorialAuthoringGuidePage>();
+        [SerializeField, HideInInspector] private List<Sprite> guideSprites = new List<Sprite>();
         [SerializeField, HideInInspector] private Sprite guideSprite;
         [SerializeField, HideInInspector] private List<string> guideSpriteAddresses =
             new List<string>();
@@ -101,8 +186,22 @@ namespace GGemCo2DTutorialEditor
         public int IntValue { get => intValue; set => intValue = value; }
         public TutorialInputActionMask InputMask { get => inputMask; set => inputMask = value; }
         public TutorialGameplayState GameplayState { get => gameplayState; set => gameplayState = value; }
+        public List<TutorialAuthoringGuidePage> GuidePages =>
+            guidePages ??= new List<TutorialAuthoringGuidePage>();
+
+        /// <summary>
+        /// 기존 제작 API 호환용 Sprite 목록입니다. 새 코드에서는 <see cref="GuidePages"/>를 사용합니다.
+        /// </summary>
+        [Obsolete("GuidePages를 사용하십시오.")]
         public List<Sprite> GuideSprites => guideSprites ??= new List<Sprite>();
-        public IReadOnlyList<string> GuideSpriteAddresses => guideSpriteAddresses;
+
+        /// <summary>
+        /// 기존 제작 API 호환용 Addressables 주소 목록입니다.
+        /// </summary>
+        [Obsolete("GuidePages의 GuideSpriteAddress를 사용하십시오.")]
+        public IReadOnlyList<string> GuideSpriteAddresses =>
+            guideSpriteAddresses ??= new List<string>();
+
         public string Memo { get => memo; set => memo = value; }
 
         /// <summary>
@@ -110,23 +209,24 @@ namespace GGemCo2DTutorialEditor
         /// </summary>
         public Sprite GuideSprite
         {
-            get => GuideSprites.Count > 0 ? GuideSprites[0] : guideSprite;
+            get => GuidePages.Count > 0 ? GuidePages[0]?.GuideSprite : guideSprite;
             set
             {
                 if (value == null)
                 {
-                    GuideSprites.Clear();
+                    GuidePages.Clear();
                     guideSprite = null;
                     return;
                 }
 
-                if (GuideSprites.Count == 0)
+                if (GuidePages.Count == 0)
                 {
-                    GuideSprites.Add(value);
+                    GuidePages.Add(TutorialAuthoringGuidePage.Create(value));
                 }
                 else
                 {
-                    GuideSprites[0] = value;
+                    GuidePages[0] ??= TutorialAuthoringGuidePage.Create();
+                    GuidePages[0].GuideSprite = value;
                 }
             }
         }
@@ -135,8 +235,8 @@ namespace GGemCo2DTutorialEditor
         /// 기존 단일 페이지 제작 API와의 호환성을 위해 첫 번째 가이드 주소를 제공합니다.
         /// </summary>
         public string GuideSpriteAddress =>
-            guideSpriteAddresses != null && guideSpriteAddresses.Count > 0
-                ? guideSpriteAddresses[0]
+            GuidePages.Count > 0
+                ? GuidePages[0]?.GuideSpriteAddress
                 : guideSpriteAddress;
 
         /// <summary>
@@ -154,6 +254,19 @@ namespace GGemCo2DTutorialEditor
         public TutorialActionDefinition ToRuntimeDefinition()
         {
             EnsureDefaults();
+            List<TutorialGuidePageDefinition> runtimePages =
+                new List<TutorialGuidePageDefinition>(GuidePages.Count);
+            if (type == TutorialActionType.ShowGuide)
+            {
+                for (int i = 0; i < GuidePages.Count; i++)
+                {
+                    if (GuidePages[i] != null)
+                    {
+                        runtimePages.Add(GuidePages[i].ToRuntimeDefinition());
+                    }
+                }
+            }
+
             return new TutorialActionDefinition
             {
                 type = type,
@@ -161,12 +274,8 @@ namespace GGemCo2DTutorialEditor
                 intValue = intValue,
                 inputMask = inputMask,
                 gameplayState = gameplayState,
-                guideSpriteAddress = type == TutorialActionType.ShowGuide
-                    ? guideSpriteAddress
-                    : null,
-                guideSpriteAddresses = type == TutorialActionType.ShowGuide
-                    ? new List<string>(guideSpriteAddresses)
-                    : new List<string>(),
+                guidePages = runtimePages,
+                guideSpriteAddresses = new List<string>(),
             };
         }
 
@@ -177,38 +286,30 @@ namespace GGemCo2DTutorialEditor
         /// <returns>기존 주소 목록과 달라졌으면 true입니다.</returns>
         public bool SetGuideSpriteAddresses(IReadOnlyList<string> addresses)
         {
-            guideSpriteAddresses ??= new List<string>();
             int sourceCount = addresses?.Count ?? 0;
-            bool changed = guideSpriteAddresses.Count != sourceCount;
-            if (!changed)
+            if (GuidePages.Count == 0)
             {
+                guideSpriteAddresses ??= new List<string>();
+                guideSpriteAddresses.Clear();
                 for (int i = 0; i < sourceCount; i++)
                 {
-                    string normalized = NormalizeAddress(addresses[i]);
-                    if (!string.Equals(
-                            guideSpriteAddresses[i],
-                            normalized,
-                            StringComparison.Ordinal))
-                    {
-                        changed = true;
-                        break;
-                    }
+                    guideSpriteAddresses.Add(addresses[i]);
+                }
+
+                return sourceCount > 0;
+            }
+
+            bool changed = false;
+            for (int i = 0; i < GuidePages.Count; i++)
+            {
+                string address = i < sourceCount ? addresses[i] : null;
+                if (GuidePages[i] != null)
+                {
+                    changed |= GuidePages[i].SetGuideSpriteAddress(address);
                 }
             }
 
-            if (!changed)
-            {
-                return false;
-            }
-
-            guideSpriteAddresses.Clear();
-            for (int i = 0; i < sourceCount; i++)
-            {
-                guideSpriteAddresses.Add(NormalizeAddress(addresses[i]));
-            }
-
-            guideSpriteAddress = null;
-            return true;
+            return changed;
         }
 
         /// <summary>
@@ -217,29 +318,18 @@ namespace GGemCo2DTutorialEditor
         /// <param name="address">첫 번째 페이지의 Sprite 런타임 주소입니다.</param>
         public void SetGuideSpriteAddress(string address)
         {
-            string normalized = NormalizeAddress(address);
-            guideSpriteAddresses ??= new List<string>();
-            if (normalized == null)
+            if (GuidePages.Count == 0)
             {
-                guideSpriteAddresses.Clear();
-                guideSpriteAddress = null;
+                guideSpriteAddress = address;
                 return;
             }
 
-            if (guideSpriteAddresses.Count == 0)
-            {
-                guideSpriteAddresses.Add(normalized);
-            }
-            else
-            {
-                guideSpriteAddresses[0] = normalized;
-            }
-
-            guideSpriteAddress = null;
+            GuidePages[0] ??= TutorialAuthoringGuidePage.Create();
+            GuidePages[0].SetGuideSpriteAddress(address);
         }
 
         /// <summary>
-        /// 기존 Guide UID 기반 제작 데이터를 직접 Sprite 참조 방식으로 변환합니다.
+        /// 기존 Guide UID 기반 제작 데이터를 직접 페이지 참조 방식으로 변환합니다.
         /// </summary>
         /// <param name="legacyGuides">이전 제작 에셋에 저장된 가이드 목록입니다.</param>
         /// <returns>변환할 데이터가 없거나 Sprite 변환에 성공하면 true입니다.</returns>
@@ -251,7 +341,8 @@ namespace GGemCo2DTutorialEditor
                 return true;
             }
 
-            if (guideSprites != null && guideSprites.Count > 0)
+            if (GuidePages.Count > 0 ||
+                (guideSprites != null && guideSprites.Count > 0))
             {
                 targetUid = 0;
                 return true;
@@ -270,8 +361,7 @@ namespace GGemCo2DTutorialEditor
                     continue;
                 }
 
-                guideSprites ??= new List<Sprite>();
-                guideSprites.Add(guide.Sprite);
+                GuidePages.Add(TutorialAuthoringGuidePage.Create(guide.Sprite));
                 targetUid = 0;
                 return true;
             }
@@ -280,38 +370,52 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// 액션 값을 보정하고 현재 액션 타입에서 사용하지 않는 가이드 참조를 정리합니다.
+        /// 액션 값을 보정하고 기존 Sprite 목록을 새 페이지 데이터로 이전합니다.
         /// </summary>
         public void EnsureDefaults()
         {
             targetUid = Mathf.Max(0, targetUid);
+            guidePages ??= new List<TutorialAuthoringGuidePage>();
             guideSprites ??= new List<Sprite>();
             guideSpriteAddresses ??= new List<string>();
             if (type == TutorialActionType.ShowGuide)
             {
                 targetUid = 0;
-                MigrateSingleGuidePage();
+                MigrateLegacyGuidePages();
+                for (int i = guidePages.Count - 1; i >= 0; i--)
+                {
+                    if (guidePages[i] == null)
+                    {
+                        guidePages.RemoveAt(i);
+                    }
+                    else
+                    {
+                        guidePages[i].EnsureDefaults();
+                    }
+                }
+            }
+            else
+            {
+                guidePages.Clear();
             }
 
-            if (type != TutorialActionType.ShowGuide)
-            {
-                guideSprites.Clear();
-                guideSpriteAddresses.Clear();
-                guideSprite = null;
-                guideSpriteAddress = null;
-            }
-            else if (guideSprites.Count == 0)
-            {
-                guideSpriteAddresses.Clear();
-                guideSpriteAddress = null;
-            }
+            // 이전 필드는 변환 뒤 비워 중복 데이터가 다시 JSON으로 유입되지 않게 합니다.
+            guideSprites.Clear();
+            guideSpriteAddresses.Clear();
+            guideSprite = null;
+            guideSpriteAddress = null;
         }
 
         /// <summary>
-        /// 기존 단일 Sprite와 단일 주소를 새 페이지 목록으로 이전합니다.
+        /// 기존 단일·다중 Sprite와 주소 목록을 같은 순서의 새 페이지 객체로 이전합니다.
         /// </summary>
-        private void MigrateSingleGuidePage()
+        private void MigrateLegacyGuidePages()
         {
+            if (guidePages.Count > 0)
+            {
+                return;
+            }
+
             if (guideSprites.Count == 0 && guideSprite != null)
             {
                 guideSprites.Add(guideSprite);
@@ -320,23 +424,17 @@ namespace GGemCo2DTutorialEditor
             if (guideSpriteAddresses.Count == 0 &&
                 !string.IsNullOrWhiteSpace(guideSpriteAddress))
             {
-                guideSpriteAddresses.Add(guideSpriteAddress.Trim());
+                guideSpriteAddresses.Add(guideSpriteAddress);
             }
 
-            guideSprite = null;
-            guideSpriteAddress = null;
-        }
-
-        /// <summary>
-        /// Addressables 주소의 공백을 제거하고 빈 값은 null로 정규화합니다.
-        /// </summary>
-        /// <param name="address">정규화할 주소입니다.</param>
-        /// <returns>정규화된 주소 또는 null입니다.</returns>
-        private static string NormalizeAddress(string address)
-        {
-            return string.IsNullOrWhiteSpace(address)
-                ? null
-                : address.Trim();
+            int pageCount = Mathf.Max(guideSprites.Count, guideSpriteAddresses.Count);
+            for (int i = 0; i < pageCount; i++)
+            {
+                Sprite sprite = i < guideSprites.Count ? guideSprites[i] : null;
+                string address =
+                    i < guideSpriteAddresses.Count ? guideSpriteAddresses[i] : null;
+                guidePages.Add(TutorialAuthoringGuidePage.Create(sprite, address));
+            }
         }
     }
 

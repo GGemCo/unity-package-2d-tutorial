@@ -207,7 +207,8 @@ namespace GGemCo2DTutorialEditor
                 return;
             }
 
-            List<string> runtimeAddresses = new List<string>();
+            List<TutorialGuidePageDefinition> runtimePages =
+                new List<TutorialGuidePageDefinition>();
             for (int i = 0; i < source.Count; i++)
             {
                 TutorialActionDefinition sourceAction = source[i];
@@ -222,31 +223,36 @@ namespace GGemCo2DTutorialEditor
                 action.IntValue = sourceAction.intValue;
                 action.InputMask = sourceAction.inputMask;
                 action.GameplayState = sourceAction.gameplayState;
-                sourceAction.CollectGuideSpriteAddresses(runtimeAddresses);
+                sourceAction.CollectGuidePages(runtimePages);
                 TutorialAuthoringAction existingAction =
                     existing != null && i < existing.Count
                         ? existing[i]
                         : null;
 
                 for (int pageIndex = 0;
-                     pageIndex < runtimeAddresses.Count;
+                     pageIndex < runtimePages.Count;
                      pageIndex++)
                 {
+                    TutorialGuidePageDefinition runtimePage =
+                        runtimePages[pageIndex];
                     Sprite resolvedSprite =
                         TutorialGuideSpriteAddressableSynchronizer.ResolveSprite(
-                            runtimeAddresses[pageIndex]);
+                            runtimePage.spriteAddress);
                     if (resolvedSprite == null &&
                         sourceAction.type == TutorialActionType.ShowGuide &&
                         existingAction != null &&
-                        pageIndex < existingAction.GuideSprites.Count)
+                        pageIndex < existingAction.GuidePages.Count)
                     {
-                        resolvedSprite = existingAction.GuideSprites[pageIndex];
+                        resolvedSprite =
+                            existingAction.GuidePages[pageIndex]?.GuideSprite;
                     }
 
-                    action.GuideSprites.Add(resolvedSprite);
+                    action.GuidePages.Add(TutorialAuthoringGuidePage.Create(
+                        resolvedSprite,
+                        runtimePage.spriteAddress,
+                        runtimePage.descriptionLocalizationKey));
                 }
 
-                action.SetGuideSpriteAddresses(runtimeAddresses);
                 target.Add(action);
             }
         }

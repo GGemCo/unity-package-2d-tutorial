@@ -42,9 +42,30 @@ namespace GGemCo2DTutorialEditor
                 $"Action tutorial={context.TutorialUid}, step={context.StepIndex}, " +
                 $"type={action.type}, targetUid={action.targetUid}, int={action.intValue}, " +
                 $"inputMask={action.inputMask}, state={action.gameplayState}, " +
-                $"guidePageCount={action.guideSpriteAddresses?.Count ?? 0}, " +
+                $"guidePageCount={ResolveGuidePageCount(action)}, " +
                 $"legacyGuideSpriteAddress={action.guideSpriteAddress}");
             return false;
+        }
+
+        /// <summary>
+        /// 새 페이지 데이터를 우선하고 기존 주소 목록까지 고려하여 로그용 페이지 수를 계산합니다.
+        /// </summary>
+        /// <param name="action">페이지 수를 계산할 액션입니다.</param>
+        /// <returns>런타임에서 사용할 수 있는 가이드 페이지 수입니다.</returns>
+        private static int ResolveGuidePageCount(TutorialActionDefinition action)
+        {
+            if (action.guidePages != null && action.guidePages.Count > 0)
+            {
+                return action.guidePages.Count;
+            }
+
+            if (action.guideSpriteAddresses != null &&
+                action.guideSpriteAddresses.Count > 0)
+            {
+                return action.guideSpriteAddresses.Count;
+            }
+
+            return string.IsNullOrWhiteSpace(action.guideSpriteAddress) ? 0 : 1;
         }
     }
 }

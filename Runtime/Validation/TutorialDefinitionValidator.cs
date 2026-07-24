@@ -121,6 +121,16 @@ namespace GGemCo2DTutorial
                         $"ShowGuide 가이드 페이지 주소가 없습니다. uid: {tutorialUid}, stepIndex: {stepIndex}, phase: {phase}, actionIndex: {i}";
                     return false;
                 }
+
+                if (action.type == TutorialActionType.ShowGuide &&
+                    action.guidePages != null &&
+                    action.guidePages.Count > 0 &&
+                    !HasValidGuidePageDescriptions(action))
+                {
+                    error =
+                        $"ShowGuide 새 페이지 데이터의 이미지 주소 또는 설명 Localization 키가 올바르지 않습니다. uid: {tutorialUid}, stepIndex: {stepIndex}, phase: {phase}, actionIndex: {i}";
+                    return false;
+                }
             }
 
             error = null;
@@ -134,6 +144,18 @@ namespace GGemCo2DTutorial
         /// <returns>로드 가능한 주소가 하나 이상 있으면 true입니다.</returns>
         private static bool HasValidGuidePage(TutorialActionDefinition action)
         {
+            if (action.guidePages != null)
+            {
+                for (int i = 0; i < action.guidePages.Count; i++)
+                {
+                    if (!string.IsNullOrWhiteSpace(
+                            action.guidePages[i]?.spriteAddress))
+                    {
+                        return true;
+                    }
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(action.guideSpriteAddress))
             {
                 return true;
@@ -153,6 +175,31 @@ namespace GGemCo2DTutorial
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 새 가이드 페이지 데이터의 모든 이미지 주소와 설명 Localization 키를 검증합니다.
+        /// </summary>
+        /// <param name="action">검증할 ShowGuide 액션입니다.</param>
+        /// <returns>모든 새 페이지가 이미지 주소와 설명 키를 가지면 true입니다.</returns>
+        private static bool HasValidGuidePageDescriptions(
+            TutorialActionDefinition action)
+        {
+            System.Collections.Generic.HashSet<string> keys =
+                new System.Collections.Generic.HashSet<string>();
+            for (int i = 0; i < action.guidePages.Count; i++)
+            {
+                TutorialGuidePageDefinition page = action.guidePages[i];
+                if (page == null ||
+                    string.IsNullOrWhiteSpace(page.spriteAddress) ||
+                    string.IsNullOrWhiteSpace(page.descriptionLocalizationKey) ||
+                    !keys.Add(page.descriptionLocalizationKey.Trim()))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

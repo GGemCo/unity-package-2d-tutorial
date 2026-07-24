@@ -138,6 +138,16 @@ namespace GGemCo2DTutorial
     }
 
     /// <summary>
+    /// 가이드 한 페이지에서 함께 표시할 Sprite 주소와 현지화 설명 키를 정의합니다.
+    /// </summary>
+    [Serializable]
+    public sealed class TutorialGuidePageDefinition
+    {
+        public string spriteAddress;
+        public string descriptionLocalizationKey;
+    }
+
+    /// <summary>
     /// 표준 액션 처리기에 전달할 UID, enum, Addressables 주소 기반 인자를 정의합니다.
     /// </summary>
     [Serializable]
@@ -157,8 +167,76 @@ namespace GGemCo2DTutorial
 
         /// <summary>
         /// ShowGuide 액션에서 페이지 순서대로 표시할 Sprite Addressables 런타임 주소 목록입니다.
+        /// 기존 다중 페이지 JSON과의 하위 호환성을 위해 유지합니다.
         /// </summary>
         public List<string> guideSpriteAddresses = new List<string>();
+
+        /// <summary>
+        /// ShowGuide 액션에서 페이지 순서대로 표시할 이미지와 현지화 설명 키 목록입니다.
+        /// </summary>
+        public List<TutorialGuidePageDefinition> guidePages =
+            new List<TutorialGuidePageDefinition>();
+
+        /// <summary>
+        /// 새 페이지 데이터를 우선하고, 없으면 기존 다중·단일 주소를 설명 없는 페이지로 변환합니다.
+        /// </summary>
+        /// <param name="result">정규화한 페이지 정의를 저장할 재사용 목록입니다.</param>
+        public void CollectGuidePages(List<TutorialGuidePageDefinition> result)
+        {
+            if (result == null)
+            {
+                return;
+            }
+
+            result.Clear();
+            if (guidePages != null && guidePages.Count > 0)
+            {
+                for (int i = 0; i < guidePages.Count; i++)
+                {
+                    TutorialGuidePageDefinition page = guidePages[i];
+                    if (page == null || string.IsNullOrWhiteSpace(page.spriteAddress))
+                    {
+                        continue;
+                    }
+
+                    result.Add(page);
+                }
+
+                if (result.Count > 0)
+                {
+                    return;
+                }
+            }
+
+            // 기존 JSON은 설명 키가 없으므로 빈 키를 가진 새 페이지 정의로 런타임에서만 변환합니다.
+            if (guideSpriteAddresses != null && guideSpriteAddresses.Count > 0)
+            {
+                for (int i = 0; i < guideSpriteAddresses.Count; i++)
+                {
+                    string address = guideSpriteAddresses[i];
+                    if (!string.IsNullOrWhiteSpace(address))
+                    {
+                        result.Add(new TutorialGuidePageDefinition
+                        {
+                            spriteAddress = address.Trim(),
+                        });
+                    }
+                }
+
+                if (result.Count > 0)
+                {
+                    return;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(guideSpriteAddress))
+            {
+                result.Add(new TutorialGuidePageDefinition
+                {
+                    spriteAddress = guideSpriteAddress.Trim(),
+                });
+            }
+        }
 
         /// <summary>
         /// 다중 페이지 주소를 우선하고, 없으면 기존 단일 페이지 주소를 결과 목록에 추가합니다.
@@ -172,6 +250,23 @@ namespace GGemCo2DTutorial
             }
 
             result.Clear();
+            if (guidePages != null && guidePages.Count > 0)
+            {
+                for (int i = 0; i < guidePages.Count; i++)
+                {
+                    string address = guidePages[i]?.spriteAddress;
+                    if (!string.IsNullOrWhiteSpace(address))
+                    {
+                        result.Add(address.Trim());
+                    }
+                }
+
+                if (result.Count > 0)
+                {
+                    return;
+                }
+            }
+
             if (guideSpriteAddresses != null && guideSpriteAddresses.Count > 0)
             {
                 for (int i = 0; i < guideSpriteAddresses.Count; i++)

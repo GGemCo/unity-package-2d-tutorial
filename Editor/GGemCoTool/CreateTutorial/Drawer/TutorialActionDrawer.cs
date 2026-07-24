@@ -35,7 +35,7 @@ namespace GGemCo2DTutorialEditor
                 case TutorialActionType.ShowGuide:
                     EditorGUI.BeginChangeCheck();
                     EditorGUILayout.PropertyField(
-                        actionProperty.FindPropertyRelative("guideSprites"),
+                        actionProperty.FindPropertyRelative("guidePages"),
                         new GUIContent("가이드 페이지"),
                         true);
                     if (EditorGUI.EndChangeCheck())
@@ -44,7 +44,7 @@ namespace GGemCo2DTutorialEditor
                     }
 
                     EditorGUILayout.HelpBox(
-                        "위에서 아래 순서로 페이지를 표시합니다. 모든 페이지를 확인하면 닫기 버튼이 나타납니다.",
+                        "각 페이지에 Sprite와 Tutorial Localization 키를 입력합니다. 위에서 아래 순서로 표시하며, 모든 페이지를 확인하면 닫기 버튼이 나타납니다.",
                         MessageType.Info);
                     break;
                 case TutorialActionType.HighlightUi:

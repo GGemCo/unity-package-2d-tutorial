@@ -123,7 +123,7 @@ namespace GGemCo2DTutorialEditor
                 }
 
                 if (action.Type == TutorialActionType.ShowGuide &&
-                    action.GuideSprites.Count == 0)
+                    action.GuidePages.Count == 0)
                 {
                     result.AddError(path, "ShowGuide에는 가이드 페이지를 하나 이상 연결해야 합니다.");
                     continue;
@@ -134,13 +134,35 @@ namespace GGemCo2DTutorialEditor
                     continue;
                 }
 
-                for (int pageIndex = 0; pageIndex < action.GuideSprites.Count; pageIndex++)
+                HashSet<string> localizationKeys = new HashSet<string>();
+                for (int pageIndex = 0; pageIndex < action.GuidePages.Count; pageIndex++)
                 {
-                    if (action.GuideSprites[pageIndex] == null)
+                    TutorialAuthoringGuidePage page = action.GuidePages[pageIndex];
+                    string pagePath = $"{path}.GuidePages[{pageIndex}]";
+                    if (page == null)
+                    {
+                        result.AddError(pagePath, "가이드 페이지 데이터가 없습니다.");
+                        continue;
+                    }
+
+                    if (page.GuideSprite == null)
                     {
                         result.AddError(
-                            $"{path}.GuidePages[{pageIndex}]",
+                            pagePath,
                             "가이드 페이지에는 Project 창의 Sprite를 연결해야 합니다.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(page.DescriptionLocalizationKey))
+                    {
+                        result.AddError(
+                            pagePath,
+                            "가이드 페이지 설명 Localization 키를 입력해야 합니다.");
+                    }
+                    else if (!localizationKeys.Add(page.DescriptionLocalizationKey))
+                    {
+                        result.AddError(
+                            pagePath,
+                            "같은 ShowGuide 액션에서 설명 Localization 키를 중복 사용할 수 없습니다.");
                     }
                 }
             }

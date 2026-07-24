@@ -180,13 +180,14 @@ namespace GGemCo2DTutorialEditor
                     }
 
                     runtimeAddresses.Clear();
-                    IReadOnlyList<Sprite> guideSprites = action.GuideSprites;
-                    for (int pageIndex = 0; pageIndex < guideSprites.Count; pageIndex++)
+                    IReadOnlyList<TutorialAuthoringGuidePage> guidePages =
+                        action.GuidePages;
+                    for (int pageIndex = 0; pageIndex < guidePages.Count; pageIndex++)
                     {
                         string runtimeAddress = RegisterOrReuseSprite(
                             settings,
                             group,
-                            guideSprites[pageIndex],
+                            guidePages[pageIndex]?.GuideSprite,
                             referencedAutoGuids);
                         runtimeAddresses.Add(runtimeAddress);
 
