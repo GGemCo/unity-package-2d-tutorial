@@ -36,7 +36,12 @@ namespace GGemCo2DTutorialEditor
                     break;
                 case TutorialEventType.GuideClicked:
                     EditorGUILayout.HelpBox(
-                        "현재 표시 중인 단일 가이드 UI의 클릭을 기다립니다.",
+                        "기존 단일 가이드 클릭 조건입니다. 새 가이드 닫기 이벤트도 호환하여 처리합니다.",
+                        MessageType.Info);
+                    break;
+                case TutorialEventType.GuideClosed:
+                    EditorGUILayout.HelpBox(
+                        "모든 가이드 페이지를 확인한 뒤 닫기 버튼을 누를 때 완료됩니다.",
                         MessageType.Info);
                     break;
                 case TutorialEventType.CombatStarted:

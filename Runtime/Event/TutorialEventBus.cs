@@ -97,6 +97,14 @@ namespace GGemCo2DTutorial
             Publish(new TutorialGameEvent(TutorialEventType.CombatStarted));
         }
 
+        /// <summary>
+        /// 현재 가이드의 모든 페이지 확인과 닫기 입력이 완료되었음을 발행합니다.
+        /// </summary>
+        public static void PublishGuideClosed()
+        {
+            Publish(new TutorialGameEvent(TutorialEventType.GuideClosed));
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset()
         {

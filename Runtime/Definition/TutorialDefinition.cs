@@ -19,6 +19,7 @@ namespace GGemCo2DTutorial
         AutoMoveDistanceReached = 8,
         GuideClicked = 9,
         CombatStarted = 10,
+        GuideClosed = 11,
     }
 
     /// <summary>
@@ -150,7 +151,48 @@ namespace GGemCo2DTutorial
 
         /// <summary>
         /// ShowGuide 액션에서 표시할 Sprite의 Addressables 런타임 주소입니다.
+        /// 기존 단일 페이지 JSON과의 하위 호환성을 위해 유지합니다.
         /// </summary>
         public string guideSpriteAddress;
+
+        /// <summary>
+        /// ShowGuide 액션에서 페이지 순서대로 표시할 Sprite Addressables 런타임 주소 목록입니다.
+        /// </summary>
+        public List<string> guideSpriteAddresses = new List<string>();
+
+        /// <summary>
+        /// 다중 페이지 주소를 우선하고, 없으면 기존 단일 페이지 주소를 결과 목록에 추가합니다.
+        /// </summary>
+        /// <param name="result">정규화한 페이지 주소를 저장할 재사용 목록입니다.</param>
+        public void CollectGuideSpriteAddresses(List<string> result)
+        {
+            if (result == null)
+            {
+                return;
+            }
+
+            result.Clear();
+            if (guideSpriteAddresses != null && guideSpriteAddresses.Count > 0)
+            {
+                for (int i = 0; i < guideSpriteAddresses.Count; i++)
+                {
+                    string address = guideSpriteAddresses[i];
+                    if (!string.IsNullOrWhiteSpace(address))
+                    {
+                        result.Add(address.Trim());
+                    }
+                }
+
+                if (result.Count > 0)
+                {
+                    return;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(guideSpriteAddress))
+            {
+                result.Add(guideSpriteAddress.Trim());
+            }
+        }
     }
 }

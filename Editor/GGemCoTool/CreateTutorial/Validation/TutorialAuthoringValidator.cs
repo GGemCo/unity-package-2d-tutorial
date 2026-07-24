@@ -123,9 +123,25 @@ namespace GGemCo2DTutorialEditor
                 }
 
                 if (action.Type == TutorialActionType.ShowGuide &&
-                    action.GuideSprite == null)
+                    action.GuideSprites.Count == 0)
                 {
-                    result.AddError(path, "ShowGuide에는 Project 창의 Sprite를 연결해야 합니다.");
+                    result.AddError(path, "ShowGuide에는 가이드 페이지를 하나 이상 연결해야 합니다.");
+                    continue;
+                }
+
+                if (action.Type != TutorialActionType.ShowGuide)
+                {
+                    continue;
+                }
+
+                for (int pageIndex = 0; pageIndex < action.GuideSprites.Count; pageIndex++)
+                {
+                    if (action.GuideSprites[pageIndex] == null)
+                    {
+                        result.AddError(
+                            $"{path}.GuidePages[{pageIndex}]",
+                            "가이드 페이지에는 Project 창의 Sprite를 연결해야 합니다.");
+                    }
                 }
             }
         }

@@ -35,12 +35,17 @@ namespace GGemCo2DTutorialEditor
                 case TutorialActionType.ShowGuide:
                     EditorGUI.BeginChangeCheck();
                     EditorGUILayout.PropertyField(
-                        actionProperty.FindPropertyRelative("guideSprite"),
-                        new GUIContent("가이드 Sprite"));
+                        actionProperty.FindPropertyRelative("guideSprites"),
+                        new GUIContent("가이드 페이지"),
+                        true);
                     if (EditorGUI.EndChangeCheck())
                     {
                         TutorialGuideSpriteAddressableSynchronizer.ScheduleSynchronize();
                     }
+
+                    EditorGUILayout.HelpBox(
+                        "위에서 아래 순서로 페이지를 표시합니다. 모든 페이지를 확인하면 닫기 버튼이 나타납니다.",
+                        MessageType.Info);
                     break;
                 case TutorialActionType.HighlightUi:
                 case TutorialActionType.ClearHighlight:

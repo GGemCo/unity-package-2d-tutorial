@@ -115,16 +115,44 @@ namespace GGemCo2DTutorial
                 }
 
                 if (action.type == TutorialActionType.ShowGuide &&
-                    string.IsNullOrWhiteSpace(action.guideSpriteAddress))
+                    !HasValidGuidePage(action))
                 {
                     error =
-                        $"ShowGuide 가이드 Sprite 주소가 없습니다. uid: {tutorialUid}, stepIndex: {stepIndex}, phase: {phase}, actionIndex: {i}";
+                        $"ShowGuide 가이드 페이지 주소가 없습니다. uid: {tutorialUid}, stepIndex: {stepIndex}, phase: {phase}, actionIndex: {i}";
                     return false;
                 }
             }
 
             error = null;
             return true;
+        }
+
+        /// <summary>
+        /// ShowGuide 액션에 다중 페이지 또는 기존 단일 페이지 주소가 있는지 확인합니다.
+        /// </summary>
+        /// <param name="action">검증할 튜토리얼 액션입니다.</param>
+        /// <returns>로드 가능한 주소가 하나 이상 있으면 true입니다.</returns>
+        private static bool HasValidGuidePage(TutorialActionDefinition action)
+        {
+            if (!string.IsNullOrWhiteSpace(action.guideSpriteAddress))
+            {
+                return true;
+            }
+
+            if (action.guideSpriteAddresses == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < action.guideSpriteAddresses.Count; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(action.guideSpriteAddresses[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

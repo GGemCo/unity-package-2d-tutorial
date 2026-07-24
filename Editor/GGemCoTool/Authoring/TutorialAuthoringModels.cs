@@ -58,12 +58,13 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
-        /// 조건 값을 유효 범위로 보정하고 단일 가이드 클릭 정책을 적용합니다.
+        /// 조건 값을 유효 범위로 보정하고 가이드 완료 조건 정책을 적용합니다.
         /// </summary>
         public void EnsureDefaults()
         {
             targetUid = Mathf.Max(0, targetUid);
-            if (type == TutorialEventType.GuideClicked)
+            if (type == TutorialEventType.GuideClicked ||
+                type == TutorialEventType.GuideClosed)
             {
                 targetUid = 0;
             }
@@ -88,7 +89,10 @@ namespace GGemCo2DTutorialEditor
         [SerializeField] private int intValue;
         [SerializeField] private TutorialInputActionMask inputMask;
         [SerializeField] private TutorialGameplayState gameplayState;
-        [SerializeField] private Sprite guideSprite;
+        [SerializeField] private List<Sprite> guideSprites = new List<Sprite>();
+        [SerializeField, HideInInspector] private Sprite guideSprite;
+        [SerializeField, HideInInspector] private List<string> guideSpriteAddresses =
+            new List<string>();
         [SerializeField, HideInInspector] private string guideSpriteAddress;
         [SerializeField, TextArea(1, 3)] private string memo;
 
@@ -97,9 +101,43 @@ namespace GGemCo2DTutorialEditor
         public int IntValue { get => intValue; set => intValue = value; }
         public TutorialInputActionMask InputMask { get => inputMask; set => inputMask = value; }
         public TutorialGameplayState GameplayState { get => gameplayState; set => gameplayState = value; }
-        public Sprite GuideSprite { get => guideSprite; set => guideSprite = value; }
-        public string GuideSpriteAddress => guideSpriteAddress;
+        public List<Sprite> GuideSprites => guideSprites ??= new List<Sprite>();
+        public IReadOnlyList<string> GuideSpriteAddresses => guideSpriteAddresses;
         public string Memo { get => memo; set => memo = value; }
+
+        /// <summary>
+        /// 기존 단일 페이지 제작 API와의 호환성을 위해 첫 번째 가이드 Sprite를 제공합니다.
+        /// </summary>
+        public Sprite GuideSprite
+        {
+            get => GuideSprites.Count > 0 ? GuideSprites[0] : guideSprite;
+            set
+            {
+                if (value == null)
+                {
+                    GuideSprites.Clear();
+                    guideSprite = null;
+                    return;
+                }
+
+                if (GuideSprites.Count == 0)
+                {
+                    GuideSprites.Add(value);
+                }
+                else
+                {
+                    GuideSprites[0] = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 기존 단일 페이지 제작 API와의 호환성을 위해 첫 번째 가이드 주소를 제공합니다.
+        /// </summary>
+        public string GuideSpriteAddress =>
+            guideSpriteAddresses != null && guideSpriteAddresses.Count > 0
+                ? guideSpriteAddresses[0]
+                : guideSpriteAddress;
 
         /// <summary>
         /// 지정한 액션 종류의 기본 데이터를 생성합니다.
@@ -115,6 +153,7 @@ namespace GGemCo2DTutorialEditor
         /// </summary>
         public TutorialActionDefinition ToRuntimeDefinition()
         {
+            EnsureDefaults();
             return new TutorialActionDefinition
             {
                 type = type,
@@ -125,18 +164,78 @@ namespace GGemCo2DTutorialEditor
                 guideSpriteAddress = type == TutorialActionType.ShowGuide
                     ? guideSpriteAddress
                     : null,
+                guideSpriteAddresses = type == TutorialActionType.ShowGuide
+                    ? new List<string>(guideSpriteAddresses)
+                    : new List<string>(),
             };
         }
 
         /// <summary>
-        /// Addressables 동기화 결과로 계산된 가이드 Sprite 런타임 주소를 저장합니다.
+        /// Addressables 동기화 결과로 계산된 가이드 페이지 주소 목록을 저장합니다.
         /// </summary>
-        /// <param name="address">Sprite 또는 Sprite 하위 에셋을 로드할 Addressables 주소입니다.</param>
+        /// <param name="addresses">페이지 순서대로 정렬된 Sprite 런타임 주소 목록입니다.</param>
+        /// <returns>기존 주소 목록과 달라졌으면 true입니다.</returns>
+        public bool SetGuideSpriteAddresses(IReadOnlyList<string> addresses)
+        {
+            guideSpriteAddresses ??= new List<string>();
+            int sourceCount = addresses?.Count ?? 0;
+            bool changed = guideSpriteAddresses.Count != sourceCount;
+            if (!changed)
+            {
+                for (int i = 0; i < sourceCount; i++)
+                {
+                    string normalized = NormalizeAddress(addresses[i]);
+                    if (!string.Equals(
+                            guideSpriteAddresses[i],
+                            normalized,
+                            StringComparison.Ordinal))
+                    {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!changed)
+            {
+                return false;
+            }
+
+            guideSpriteAddresses.Clear();
+            for (int i = 0; i < sourceCount; i++)
+            {
+                guideSpriteAddresses.Add(NormalizeAddress(addresses[i]));
+            }
+
+            guideSpriteAddress = null;
+            return true;
+        }
+
+        /// <summary>
+        /// 기존 단일 페이지 제작 API와의 호환성을 위해 첫 번째 가이드 주소를 설정합니다.
+        /// </summary>
+        /// <param name="address">첫 번째 페이지의 Sprite 런타임 주소입니다.</param>
         public void SetGuideSpriteAddress(string address)
         {
-            guideSpriteAddress = string.IsNullOrWhiteSpace(address)
-                ? null
-                : address.Trim();
+            string normalized = NormalizeAddress(address);
+            guideSpriteAddresses ??= new List<string>();
+            if (normalized == null)
+            {
+                guideSpriteAddresses.Clear();
+                guideSpriteAddress = null;
+                return;
+            }
+
+            if (guideSpriteAddresses.Count == 0)
+            {
+                guideSpriteAddresses.Add(normalized);
+            }
+            else
+            {
+                guideSpriteAddresses[0] = normalized;
+            }
+
+            guideSpriteAddress = null;
         }
 
         /// <summary>
@@ -152,7 +251,7 @@ namespace GGemCo2DTutorialEditor
                 return true;
             }
 
-            if (guideSprite != null)
+            if (guideSprites != null && guideSprites.Count > 0)
             {
                 targetUid = 0;
                 return true;
@@ -171,7 +270,8 @@ namespace GGemCo2DTutorialEditor
                     continue;
                 }
 
-                guideSprite = guide.Sprite;
+                guideSprites ??= new List<Sprite>();
+                guideSprites.Add(guide.Sprite);
                 targetUid = 0;
                 return true;
             }
@@ -185,20 +285,58 @@ namespace GGemCo2DTutorialEditor
         public void EnsureDefaults()
         {
             targetUid = Mathf.Max(0, targetUid);
+            guideSprites ??= new List<Sprite>();
+            guideSpriteAddresses ??= new List<string>();
             if (type == TutorialActionType.ShowGuide)
             {
                 targetUid = 0;
+                MigrateSingleGuidePage();
             }
 
             if (type != TutorialActionType.ShowGuide)
             {
+                guideSprites.Clear();
+                guideSpriteAddresses.Clear();
                 guideSprite = null;
                 guideSpriteAddress = null;
             }
-            else if (guideSprite == null)
+            else if (guideSprites.Count == 0)
             {
+                guideSpriteAddresses.Clear();
                 guideSpriteAddress = null;
             }
+        }
+
+        /// <summary>
+        /// 기존 단일 Sprite와 단일 주소를 새 페이지 목록으로 이전합니다.
+        /// </summary>
+        private void MigrateSingleGuidePage()
+        {
+            if (guideSprites.Count == 0 && guideSprite != null)
+            {
+                guideSprites.Add(guideSprite);
+            }
+
+            if (guideSpriteAddresses.Count == 0 &&
+                !string.IsNullOrWhiteSpace(guideSpriteAddress))
+            {
+                guideSpriteAddresses.Add(guideSpriteAddress.Trim());
+            }
+
+            guideSprite = null;
+            guideSpriteAddress = null;
+        }
+
+        /// <summary>
+        /// Addressables 주소의 공백을 제거하고 빈 값은 null로 정규화합니다.
+        /// </summary>
+        /// <param name="address">정규화할 주소입니다.</param>
+        /// <returns>정규화된 주소 또는 null입니다.</returns>
+        private static string NormalizeAddress(string address)
+        {
+            return string.IsNullOrWhiteSpace(address)
+                ? null
+                : address.Trim();
         }
     }
 

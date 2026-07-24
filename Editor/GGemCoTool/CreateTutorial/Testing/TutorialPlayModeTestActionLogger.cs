@@ -42,7 +42,8 @@ namespace GGemCo2DTutorialEditor
                 $"Action tutorial={context.TutorialUid}, step={context.StepIndex}, " +
                 $"type={action.type}, targetUid={action.targetUid}, int={action.intValue}, " +
                 $"inputMask={action.inputMask}, state={action.gameplayState}, " +
-                $"guideSpriteAddress={action.guideSpriteAddress}");
+                $"guidePageCount={action.guideSpriteAddresses?.Count ?? 0}, " +
+                $"legacyGuideSpriteAddress={action.guideSpriteAddress}");
             return false;
         }
     }

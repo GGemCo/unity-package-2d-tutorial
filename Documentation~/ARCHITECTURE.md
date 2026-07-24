@@ -78,14 +78,15 @@ TutorialActionHandlerRegistry.Unregister(handler);
 처리기는 `ShowGuide`, `HighlightUi`, `UnlockFeature`, `StartQuest`, `SetGameplayState` 액션을
 프로젝트 정책에 맞게 실행합니다. Tutorial 패키지는 해당 시스템의 구체 타입을 알지 않습니다.
 
-`ShowGuide`는 생성 도구에서 Project 창의 Sprite를 액션에 직접 연결합니다. JSON Export 시
-Sprite가 Addressables에 자동 등록되고 액션에는 런타임 주소가 저장됩니다. 더 이상 어떤
+`ShowGuide`는 생성 도구에서 Project 창의 Sprite를 페이지 순서대로 액션에 직접 연결합니다.
+JSON Export 시 각 Sprite가 Addressables에 자동 등록되고 액션에는 런타임 주소 목록이 저장됩니다. 더 이상 어떤
 제작 에셋에서도 사용하지 않는 자동 등록 Sprite 항목은 다음 Export 또는 Tutorial
 Addressables 설정 실행 시 제거됩니다. 이미 다른 시스템에서 Addressables로 관리하는
 Sprite는 기존 주소를 재사용하며 Tutorial 자동 삭제 대상에 포함하지 않습니다.
 
-가이드 UI는 동시에 하나만 표시하는 정책을 사용합니다. 따라서 `GuideClicked` 조건과 이벤트는
-Guide UID를 사용하지 않고 현재 표시 중인 가이드의 클릭만 의미합니다.
+가이드 UI는 동시에 하나만 표시하는 정책을 사용합니다. 모든 페이지를 확인한 뒤 닫기 버튼을
+누르면 `GuideClosed` 이벤트를 발행합니다. 기존 단일 페이지 JSON의 `GuideClicked` 조건은
+하위 호환 규칙에 따라 `GuideClosed` 이벤트로도 완료됩니다.
 
 ## 입력 제한 연동
 

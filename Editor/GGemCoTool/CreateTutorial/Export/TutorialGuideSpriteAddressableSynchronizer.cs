@@ -153,6 +153,7 @@ namespace GGemCo2DTutorialEditor
                 AssetDatabase.FindAssets("t:TutorialAuthoringAsset");
             List<TutorialAuthoringAction> actions =
                 new List<TutorialAuthoringAction>();
+            List<string> runtimeAddresses = new List<string>();
 
             for (int assetIndex = 0; assetIndex < authoringGuids.Length; assetIndex++)
             {
@@ -178,24 +179,24 @@ namespace GGemCo2DTutorialEditor
                         continue;
                     }
 
-                    string runtimeAddress = RegisterOrReuseSprite(
-                        settings,
-                        group,
-                        action.GuideSprite,
-                        referencedAutoGuids);
-                    if (!string.Equals(
-                            action.GuideSpriteAddress,
-                            runtimeAddress,
-                            StringComparison.Ordinal))
+                    runtimeAddresses.Clear();
+                    IReadOnlyList<Sprite> guideSprites = action.GuideSprites;
+                    for (int pageIndex = 0; pageIndex < guideSprites.Count; pageIndex++)
                     {
-                        action.SetGuideSpriteAddress(runtimeAddress);
-                        changed = true;
+                        string runtimeAddress = RegisterOrReuseSprite(
+                            settings,
+                            group,
+                            guideSprites[pageIndex],
+                            referencedAutoGuids);
+                        runtimeAddresses.Add(runtimeAddress);
+
+                        if (!string.IsNullOrWhiteSpace(runtimeAddress))
+                        {
+                            registeredCount++;
+                        }
                     }
 
-                    if (!string.IsNullOrWhiteSpace(runtimeAddress))
-                    {
-                        registeredCount++;
-                    }
+                    changed |= action.SetGuideSpriteAddresses(runtimeAddresses);
                 }
 
                 if (changed)

@@ -251,6 +251,20 @@ namespace GGemCo2DTutorialEditor
             SetInt(property, "intValue", 0);
             SetEnum(property, "inputMask", 0);
             SetEnum(property, "gameplayState", 0);
+            SerializedProperty guideSprites =
+                property.FindPropertyRelative("guideSprites");
+            if (guideSprites != null)
+            {
+                guideSprites.arraySize = 0;
+            }
+
+            SerializedProperty guideSpriteAddresses =
+                property.FindPropertyRelative("guideSpriteAddresses");
+            if (guideSpriteAddresses != null)
+            {
+                guideSpriteAddresses.arraySize = 0;
+            }
+
             SetObject(property, "guideSprite", null);
             SetString(property, "guideSpriteAddress", string.Empty);
             SetString(property, "memo", string.Empty);

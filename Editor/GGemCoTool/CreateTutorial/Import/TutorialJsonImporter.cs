@@ -207,6 +207,7 @@ namespace GGemCo2DTutorialEditor
                 return;
             }
 
+            List<string> runtimeAddresses = new List<string>();
             for (int i = 0; i < source.Count; i++)
             {
                 TutorialActionDefinition sourceAction = source[i];
@@ -221,19 +222,31 @@ namespace GGemCo2DTutorialEditor
                 action.IntValue = sourceAction.intValue;
                 action.InputMask = sourceAction.inputMask;
                 action.GameplayState = sourceAction.gameplayState;
-                Sprite resolvedSprite =
-                    TutorialGuideSpriteAddressableSynchronizer.ResolveSprite(
-                        sourceAction.guideSpriteAddress);
-                if (resolvedSprite == null &&
-                    sourceAction.type == TutorialActionType.ShowGuide &&
-                    existing != null &&
-                    i < existing.Count)
+                sourceAction.CollectGuideSpriteAddresses(runtimeAddresses);
+                TutorialAuthoringAction existingAction =
+                    existing != null && i < existing.Count
+                        ? existing[i]
+                        : null;
+
+                for (int pageIndex = 0;
+                     pageIndex < runtimeAddresses.Count;
+                     pageIndex++)
                 {
-                    resolvedSprite = existing[i]?.GuideSprite;
+                    Sprite resolvedSprite =
+                        TutorialGuideSpriteAddressableSynchronizer.ResolveSprite(
+                            runtimeAddresses[pageIndex]);
+                    if (resolvedSprite == null &&
+                        sourceAction.type == TutorialActionType.ShowGuide &&
+                        existingAction != null &&
+                        pageIndex < existingAction.GuideSprites.Count)
+                    {
+                        resolvedSprite = existingAction.GuideSprites[pageIndex];
+                    }
+
+                    action.GuideSprites.Add(resolvedSprite);
                 }
 
-                action.GuideSprite = resolvedSprite;
-                action.SetGuideSpriteAddress(sourceAction.guideSpriteAddress);
+                action.SetGuideSpriteAddresses(runtimeAddresses);
                 target.Add(action);
             }
         }

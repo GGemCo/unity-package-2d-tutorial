@@ -14,7 +14,7 @@ namespace GGemCo2DTutorial
             TutorialConditionDefinition condition,
             in TutorialGameEvent tutorialEvent)
         {
-            if (condition == null || condition.type != tutorialEvent.Type)
+            if (condition == null || !MatchesEventType(condition.type, tutorialEvent.Type))
             {
                 return false;
             }
@@ -43,6 +43,26 @@ namespace GGemCo2DTutorial
 
             return condition.floatValue <= 0f ||
                    Mathf.Approximately(condition.floatValue, tutorialEvent.FloatValue);
+        }
+
+        /// <summary>
+        /// 현재 이벤트 타입과 조건 타입의 일치 여부를 하위 호환 규칙까지 포함하여 확인합니다.
+        /// </summary>
+        /// <param name="conditionType">튜토리얼 단계에 저장된 조건 타입입니다.</param>
+        /// <param name="eventType">런타임에서 발행된 이벤트 타입입니다.</param>
+        /// <returns>현재 이벤트로 조건을 진행할 수 있으면 true입니다.</returns>
+        private static bool MatchesEventType(
+            TutorialEventType conditionType,
+            TutorialEventType eventType)
+        {
+            if (conditionType == eventType)
+            {
+                return true;
+            }
+
+            // 기존 단일 가이드 JSON은 GuideClicked 조건을 사용하므로 닫기 완료 이벤트도 수용합니다.
+            return conditionType == TutorialEventType.GuideClicked &&
+                   eventType == TutorialEventType.GuideClosed;
         }
     }
 }
