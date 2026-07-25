@@ -14,6 +14,7 @@ namespace GGemCo2DTutorial
         private readonly TutorialAddressableRepository _repository;
         private readonly TutorialData _data;
         private readonly TutorialStepRunner _stepRunner;
+        private readonly TutorialStartConditionEvaluator _startConditionEvaluator;
         private TutorialCatalog _catalog;
         private int _lifecycleVersion;
         private bool _isStartingTutorial;
@@ -39,6 +40,7 @@ namespace GGemCo2DTutorial
             _repository = new TutorialAddressableRepository();
             InputBlockPolicy = new TutorialInputBlockPolicy();
             _stepRunner = new TutorialStepRunner(InputBlockPolicy);
+            _startConditionEvaluator = new TutorialStartConditionEvaluator();
             _stepRunner.StepChanged += HandleStepChanged;
             _stepRunner.TutorialCompleted += HandleTutorialCompleted;
         }
@@ -63,8 +65,12 @@ namespace GGemCo2DTutorial
             }
 
             _catalog = catalog;
+            _startConditionEvaluator.Initialize(catalog);
             TutorialEventBus.Published -= HandlePublishedEvent;
             TutorialEventBus.Published += HandlePublishedEvent;
+            TutorialStartStateRegistry.Changed -= HandleStartStateChanged;
+            TutorialStartStateRegistry.Changed += HandleStartStateChanged;
+            TryStartSatisfiedTutorial();
             return true;
         }
 
@@ -91,6 +97,7 @@ namespace GGemCo2DTutorial
             _isDisposed = true;
             _lifecycleVersion++;
             TutorialEventBus.Published -= HandlePublishedEvent;
+            TutorialStartStateRegistry.Changed -= HandleStartStateChanged;
             _stepRunner.StepChanged -= HandleStepChanged;
             _stepRunner.TutorialCompleted -= HandleTutorialCompleted;
             _stepRunner.Stop();
@@ -107,35 +114,77 @@ namespace GGemCo2DTutorial
                 return;
             }
 
+            _startConditionEvaluator.HandleEvent(tutorialEvent);
             _stepRunner.HandleEvent(tutorialEvent);
-            if (_stepRunner.IsRunning || _catalog?.tutorials == null)
+            TryStartSatisfiedTutorial();
+        }
+
+        /// <summary>
+        /// Window 표시 또는 맵 진행 상태가 변경되면 복합 자동 시작 조건을 다시 평가합니다.
+        /// </summary>
+        /// <param name="eventData">변경된 상태 종류와 대상 UID입니다.</param>
+        private void HandleStartStateChanged(
+            TutorialStartStateChangedEventData eventData)
+        {
+            if (_isDisposed)
             {
                 return;
             }
 
+            TryStartSatisfiedTutorial();
+        }
+
+        /// <summary>
+        /// 현재 Catalog 순서대로 복합 조건을 평가하고 시작 가능한 첫 Tutorial을 요청합니다.
+        /// 실행 중인 Tutorial이 있더라도 거짓으로 돌아온 조건은 다시 준비 상태로 갱신합니다.
+        /// </summary>
+        private void TryStartSatisfiedTutorial()
+        {
+            if (_isDisposed || _catalog?.tutorials == null)
+            {
+                return;
+            }
+
+            bool canStart = !_stepRunner.IsRunning && !_isStartingTutorial;
             for (int i = 0; i < _catalog.tutorials.Count; i++)
             {
                 TutorialCatalogEntry entry = _catalog.tutorials[i];
                 if (entry == null ||
                     (!entry.repeatable && _data.IsCompleted(entry.uid)) ||
-                    !Matches(entry.startCondition, tutorialEvent))
+                    !_startConditionEvaluator.IsReady(entry) ||
+                    !canStart)
                 {
                     continue;
                 }
 
-                _ = StartFromEventAsync(entry);
+                _startConditionEvaluator.MarkAttempted(entry.uid);
+                _ = StartAutomaticallyAsync(entry);
                 break;
             }
         }
 
-        private async Task StartFromEventAsync(TutorialCatalogEntry entry)
+        /// <summary>
+        /// 복합 조건을 충족한 Tutorial을 비동기로 시작하고 성공 여부에 따라 조건 진행도를 정리합니다.
+        /// </summary>
+        /// <param name="entry">자동 시작할 Catalog 항목입니다.</param>
+        private async Task StartAutomaticallyAsync(TutorialCatalogEntry entry)
         {
             try
             {
-                await StartTutorialAsync(entry, restart: entry.repeatable);
+                bool started =
+                    await StartTutorialAsync(entry, restart: entry.repeatable);
+                if (started)
+                {
+                    _startConditionEvaluator.ResetEventProgress(entry.uid);
+                }
+                else
+                {
+                    _startConditionEvaluator.MarkAttemptFailed(entry.uid);
+                }
             }
             catch (Exception exception)
             {
+                _startConditionEvaluator.MarkAttemptFailed(entry.uid);
                 GcLogger.LogException(exception);
             }
         }
@@ -192,6 +241,7 @@ namespace GGemCo2DTutorial
         private void HandleTutorialCompleted(int tutorialUid)
         {
             _data.SetProgress(tutorialUid, 0, isCompleted: true);
+            TryStartSatisfiedTutorial();
         }
 
         private TutorialCatalogEntry FindEntry(int tutorialUid)
@@ -211,13 +261,6 @@ namespace GGemCo2DTutorial
             }
 
             return null;
-        }
-
-        private static bool Matches(
-            TutorialConditionDefinition condition,
-            in TutorialGameEvent tutorialEvent)
-        {
-            return TutorialConditionMatcher.Matches(condition, tutorialEvent);
         }
     }
 }

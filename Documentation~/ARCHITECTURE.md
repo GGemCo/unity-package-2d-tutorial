@@ -66,6 +66,18 @@ Quest Adapter:
 TutorialEventBus.PublishQuestState(10001, completed: true);
 ```
 
+## 복합 자동 시작 조건
+
+- `tutorial.txt`는 Tutorial 기본 정보와 `StartMatchMode`를 관리합니다.
+- `tutorial_start_condition.txt`는 `TutorialUid` 기준으로 여러 자동 시작 조건을 연결합니다.
+- 하위 조건이 없으면 기존 `StartEventType` 계열 컬럼을 단일 이벤트 조건으로 변환하여 하위 호환성을 유지합니다.
+- `Source=Event` 조건은 Tutorial Runtime이 준비된 이후 발생 횟수를 누적합니다.
+- `Source=State` 조건은 이벤트가 발생할 때마다 현재 상태를 다시 조회합니다.
+  - `WindowVisible`: 상위 게임 계층의 Window 생명주기 Adapter가 표시 상태를 등록합니다.
+  - `MapCleared`: Core `MapProgressController`의 저장 상태를 조회합니다.
+- `StartMatchMode=All`은 모든 조건, `Any`는 하나 이상의 조건이 충족될 때 자동 시작합니다.
+- 상태가 계속 참인 동안 반복 Tutorial이 무한 재시작되지 않도록 거짓에서 참으로 바뀌는 상승 경계를 한 번만 소비합니다.
+
 ## 액션 처리기 연동
 
 게임 상위 계층에서 `ITutorialActionHandler`를 구현하고 활성화 시 등록합니다.

@@ -10,6 +10,66 @@ namespace GGemCo2DTutorialEditor
     internal sealed class TutorialConditionDrawer
     {
         /// <summary>
+        /// 자동 시작 조건의 이벤트/상태 Source를 먼저 표시하고 Source에 맞는 필드를 그립니다.
+        /// </summary>
+        /// <param name="conditionProperty">자동 시작 조건 SerializedProperty입니다.</param>
+        public void DrawStart(SerializedProperty conditionProperty)
+        {
+            if (conditionProperty == null)
+            {
+                EditorGUILayout.HelpBox(
+                    "자동 시작 조건 데이터를 찾을 수 없습니다.",
+                    MessageType.Error);
+                return;
+            }
+
+            SerializedProperty sourceProperty =
+                conditionProperty.FindPropertyRelative("startSource");
+            EditorGUILayout.PropertyField(
+                sourceProperty,
+                new GUIContent("판정 방식"));
+            TutorialStartConditionSource source =
+                (TutorialStartConditionSource)sourceProperty.intValue;
+            if (source == TutorialStartConditionSource.Event)
+            {
+                Draw(conditionProperty);
+                return;
+            }
+
+            SerializedProperty stateTypeProperty =
+                conditionProperty.FindPropertyRelative("startStateType");
+            EditorGUILayout.PropertyField(
+                stateTypeProperty,
+                new GUIContent("상태 타입"));
+            TutorialStartStateType stateType =
+                (TutorialStartStateType)stateTypeProperty.intValue;
+            switch (stateType)
+            {
+                case TutorialStartStateType.WindowVisible:
+                    DrawTargetUid(conditionProperty, "Window UID");
+                    EditorGUILayout.HelpBox(
+                        "지정한 UI Window가 현재 표시 중일 때 충족됩니다.",
+                        MessageType.Info);
+                    break;
+                case TutorialStartStateType.MapCleared:
+                    DrawTargetUid(conditionProperty, "Map UID");
+                    EditorGUILayout.HelpBox(
+                        "지정한 맵의 클리어 기록이 저장되어 있을 때 충족됩니다.",
+                        MessageType.Info);
+                    break;
+                case TutorialStartStateType.None:
+                    EditorGUILayout.HelpBox(
+                        "상태 타입을 선택하십시오.",
+                        MessageType.Info);
+                    break;
+            }
+
+            EditorGUILayout.PropertyField(
+                conditionProperty.FindPropertyRelative("memo"),
+                new GUIContent("제작 메모"));
+        }
+
+        /// <summary>
         /// 조건 SerializedProperty를 현재 이벤트 종류에 맞게 편집합니다.
         /// </summary>
         public void Draw(SerializedProperty conditionProperty)

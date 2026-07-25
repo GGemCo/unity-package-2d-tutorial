@@ -25,8 +25,27 @@ namespace GGemCo2DTutorialEditor
             {
                 result.AddError("Uid", "Tutorial UID는 1 이상이어야 합니다.");
             }
+            else if (asset.Uid > (int.MaxValue - 999) / 1000)
+            {
+                result.AddError(
+                    "Uid",
+                    "Tutorial UID가 자동 시작 조건 행 UID 생성 범위를 초과했습니다.");
+            }
 
-            ValidateCondition(result, "StartCondition", asset.StartCondition, true);
+            if (asset.StartConditions.Count > 999)
+            {
+                result.AddError(
+                    "StartConditions",
+                    "자동 시작 조건은 Tutorial 하나당 최대 999개까지 등록할 수 있습니다.");
+            }
+
+            for (int i = 0; i < asset.StartConditions.Count; i++)
+            {
+                ValidateStartCondition(
+                    result,
+                    $"StartConditions[{i}]",
+                    asset.StartConditions[i]);
+            }
             HashSet<int> stepUids = new HashSet<int>();
             HashSet<int> localizationUids = new HashSet<int>();
             HashSet<string> localizationKeys =
@@ -77,6 +96,47 @@ namespace GGemCo2DTutorialEditor
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 자동 시작 조건의 Source별 필수 타입과 대상 UID를 검증합니다.
+        /// </summary>
+        /// <param name="result">검증 문제를 누적할 결과입니다.</param>
+        /// <param name="path">제작 에셋 내 조건 경로입니다.</param>
+        /// <param name="condition">검증할 자동 시작 조건입니다.</param>
+        private static void ValidateStartCondition(
+            TutorialAuthoringValidationResult result,
+            string path,
+            TutorialAuthoringCondition condition)
+        {
+            if (condition == null)
+            {
+                result.AddError(path, "자동 시작 조건 데이터가 없습니다.");
+                return;
+            }
+
+            if (condition.StartSource == TutorialStartConditionSource.Event)
+            {
+                ValidateCondition(result, path, condition, allowNone: false);
+                return;
+            }
+
+            if (condition.StartStateType == TutorialStartStateType.None)
+            {
+                result.AddError(path, "자동 시작 상태 타입을 선택해야 합니다.");
+                return;
+            }
+
+            if ((condition.StartStateType ==
+                    TutorialStartStateType.WindowVisible ||
+                 condition.StartStateType ==
+                    TutorialStartStateType.MapCleared) &&
+                condition.TargetUid <= 0)
+            {
+                result.AddError(
+                    path,
+                    "WindowVisible과 MapCleared 상태 조건에는 대상 UID가 필요합니다.");
+            }
         }
 
         private static void ValidateCondition(

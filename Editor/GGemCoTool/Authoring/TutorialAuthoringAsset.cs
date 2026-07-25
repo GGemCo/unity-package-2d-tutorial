@@ -22,9 +22,14 @@ namespace GGemCo2DTutorialEditor
         [SerializeField] private bool repeatable;
         [SerializeField] private int priority;
         [SerializeField] private TutorialPreloadPolicy preloadPolicy;
+        [SerializeField] private TutorialStartConditionMatchMode startMatchMode =
+            TutorialStartConditionMatchMode.All;
         [SerializeField, HideInInspector] private string exportFileName;
-        [SerializeField] private TutorialAuthoringCondition startCondition =
+        [SerializeField, HideInInspector] private TutorialAuthoringCondition startCondition =
             TutorialAuthoringCondition.CreateDefault();
+        [SerializeField] private List<TutorialAuthoringCondition> startConditions =
+            new List<TutorialAuthoringCondition>();
+        [SerializeField, HideInInspector] private bool startConditionsMigrated;
         [FormerlySerializedAs("guides")]
         [SerializeField, HideInInspector] private List<TutorialAuthoringGuide> legacyGuides =
             new List<TutorialAuthoringGuide>();
@@ -39,12 +44,18 @@ namespace GGemCo2DTutorialEditor
         public bool Repeatable { get => repeatable; set => repeatable = value; }
         public int Priority { get => priority; set => priority = value; }
         public TutorialPreloadPolicy PreloadPolicy { get => preloadPolicy; set => preloadPolicy = value; }
+        public TutorialStartConditionMatchMode StartMatchMode
+        {
+            get => startMatchMode;
+            set => startMatchMode = value;
+        }
         public string ExportFileName
         {
             get => ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
             set => exportFileName = ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
         }
         public TutorialAuthoringCondition StartCondition => startCondition;
+        public List<TutorialAuthoringCondition> StartConditions => startConditions;
         public List<TutorialAuthoringStep> Steps => steps;
 
         /// <summary>
@@ -88,6 +99,29 @@ namespace GGemCo2DTutorialEditor
         {
             startCondition ??= TutorialAuthoringCondition.CreateDefault();
             startCondition.EnsureDefaults();
+            startConditions ??= new List<TutorialAuthoringCondition>();
+            // 기존 단일 제작 에셋은 최초 보정 시 조건 목록 한 건으로 승격하여 데이터 손실 없이 유지합니다.
+            if (!startConditionsMigrated)
+            {
+                if (startConditions.Count == 0 &&
+                    startCondition.Type != TutorialEventType.None)
+                {
+                    startConditions.Add(CloneStartCondition(startCondition));
+                }
+
+                startConditionsMigrated = true;
+            }
+
+            for (int i = startConditions.Count - 1; i >= 0; i--)
+            {
+                if (startConditions[i] == null)
+                {
+                    startConditions.RemoveAt(i);
+                    continue;
+                }
+
+                startConditions[i].EnsureDefaults();
+            }
             legacyGuides ??= new List<TutorialAuthoringGuide>();
             steps ??= new List<TutorialAuthoringStep>();
 
@@ -120,6 +154,25 @@ namespace GGemCo2DTutorialEditor
             {
                 exportFileName = ConfigAddressableKeyTutorial.GetDefinitionFileName(uid);
             }
+        }
+
+        /// <summary>
+        /// 기존 단일 자동 시작 조건을 신규 조건 목록에 사용할 독립 객체로 복사합니다.
+        /// </summary>
+        /// <param name="source">복사할 기존 자동 시작 조건입니다.</param>
+        /// <returns>이벤트 기반으로 복사된 신규 제작 조건입니다.</returns>
+        private static TutorialAuthoringCondition CloneStartCondition(
+            TutorialAuthoringCondition source)
+        {
+            TutorialAuthoringCondition clone =
+                TutorialAuthoringCondition.CreateDefault(source.Type);
+            clone.StartSource = TutorialStartConditionSource.Event;
+            clone.TargetUid = source.TargetUid;
+            clone.InputAction = source.InputAction;
+            clone.IntValue = source.IntValue;
+            clone.FloatValue = source.FloatValue;
+            clone.RequiredCount = source.RequiredCount;
+            return clone;
         }
 
         private void OnValidate()

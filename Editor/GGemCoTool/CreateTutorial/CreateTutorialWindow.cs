@@ -161,15 +161,96 @@ namespace GGemCo2DTutorialEditor
 
         private void DrawStartConditionProperty()
         {
-            SerializedProperty property =
-                _serializedAsset.FindProperty("startCondition");
-            if (property == null)
+            SerializedProperty matchModeProperty =
+                _serializedAsset.FindProperty("startMatchMode");
+            SerializedProperty conditionsProperty =
+                _serializedAsset.FindProperty("startConditions");
+            if (matchModeProperty == null || conditionsProperty == null)
             {
                 return;
             }
 
-            EditorGUILayout.LabelField("자동 시작 조건", EditorStyles.boldLabel);
-            TutorialConditionDrawerFactory.Draw(property);
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField(
+                "자동 시작 조건",
+                EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(
+                matchModeProperty,
+                new GUIContent("조건 결합"));
+
+            for (int i = 0; i < conditionsProperty.arraySize; i++)
+            {
+                SerializedProperty condition =
+                    conditionsProperty.GetArrayElementAtIndex(i);
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField(
+                    $"조건 {i + 1}",
+                    EditorStyles.boldLabel);
+                if (GUILayout.Button("↑", GUILayout.Width(28f)) && i > 0)
+                {
+                    conditionsProperty.MoveArrayElement(i, i - 1);
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.EndVertical();
+                    break;
+                }
+
+                if (GUILayout.Button(
+                        "↓",
+                        GUILayout.Width(28f)) &&
+                    i < conditionsProperty.arraySize - 1)
+                {
+                    conditionsProperty.MoveArrayElement(i, i + 1);
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.EndVertical();
+                    break;
+                }
+
+                bool remove = GUILayout.Button(
+                    "삭제",
+                    GUILayout.Width(45f));
+                EditorGUILayout.EndHorizontal();
+                if (remove)
+                {
+                    conditionsProperty.DeleteArrayElementAtIndex(i);
+                    EditorGUILayout.EndVertical();
+                    break;
+                }
+
+                TutorialConditionDrawerFactory.DrawStart(condition);
+                EditorGUILayout.EndVertical();
+            }
+
+            if (GUILayout.Button("자동 시작 조건 추가"))
+            {
+                int index = conditionsProperty.arraySize;
+                conditionsProperty.InsertArrayElementAtIndex(index);
+                SerializedProperty added =
+                    conditionsProperty.GetArrayElementAtIndex(index);
+                ResetStartConditionProperty(added);
+            }
+        }
+
+        /// <summary>
+        /// 새 자동 시작 조건 SerializedProperty를 안전한 이벤트 기본값으로 초기화합니다.
+        /// </summary>
+        /// <param name="property">초기화할 자동 시작 조건 속성입니다.</param>
+        private static void ResetStartConditionProperty(
+            SerializedProperty property)
+        {
+            property.FindPropertyRelative("startSource").enumValueIndex =
+                (int)TutorialStartConditionSource.Event;
+            property.FindPropertyRelative("startStateType").enumValueIndex =
+                (int)TutorialStartStateType.None;
+            property.FindPropertyRelative("type").enumValueIndex =
+                (int)TutorialEventType.None;
+            property.FindPropertyRelative("targetUid").intValue = 0;
+            property.FindPropertyRelative("inputAction").enumValueIndex =
+                (int)TutorialInputActionType.None;
+            property.FindPropertyRelative("intValue").intValue = 0;
+            property.FindPropertyRelative("floatValue").floatValue = 0f;
+            property.FindPropertyRelative("requiredCount").intValue = 1;
+            property.FindPropertyRelative("memo").stringValue = string.Empty;
         }
 
         private void DrawProperty(string propertyName, string label)

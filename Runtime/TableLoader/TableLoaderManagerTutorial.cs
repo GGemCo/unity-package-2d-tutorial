@@ -19,6 +19,12 @@ namespace GGemCo2DTutorial
         public TableTutorial TableTutorial { get; } = new TableTutorial();
 
         /// <summary>
+        /// Tutorial별 복합 자동 시작 조건 테이블입니다.
+        /// </summary>
+        public TableTutorialStartCondition TableTutorialStartCondition { get; } =
+            new TableTutorialStartCondition();
+
+        /// <summary>
         /// Tutorial 테이블 레지스트리를 초기화합니다.
         /// </summary>
         private void Awake()
@@ -33,6 +39,7 @@ namespace GGemCo2DTutorial
             DontDestroyOnLoad(gameObject);
             registry = new TableRegistry();
             registry.Register(TableTutorial);
+            registry.Register(TableTutorialStartCondition);
         }
 
         /// <summary>

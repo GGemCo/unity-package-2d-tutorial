@@ -15,6 +15,15 @@ namespace GGemCo2DTutorialEditor
             Drawer.Draw(conditionProperty);
         }
 
+        /// <summary>
+        /// 이벤트와 현재 상태를 구분하는 자동 시작 조건 필드를 그립니다.
+        /// </summary>
+        /// <param name="conditionProperty">자동 시작 조건 SerializedProperty입니다.</param>
+        public static void DrawStart(SerializedProperty conditionProperty)
+        {
+            Drawer.DrawStart(conditionProperty);
+        }
+
         public static string BuildTitle(SerializedProperty conditionProperty, int index)
         {
             SerializedProperty typeProperty = conditionProperty?.FindPropertyRelative("type");

@@ -1,4 +1,5 @@
 using System;
+using GGemCo2DTutorial;
 using UnityEditor;
 using UnityEngine;
 
@@ -234,6 +235,14 @@ namespace GGemCo2DTutorialEditor
 
         private static void ResetConditionProperty(SerializedProperty property)
         {
+            SetEnum(
+                property,
+                "startSource",
+                (int)TutorialStartConditionSource.Event);
+            SetEnum(
+                property,
+                "startStateType",
+                (int)TutorialStartStateType.None);
             SetEnum(property, "type", 0);
             SetInt(property, "targetUid", 0);
             SetEnum(property, "inputAction", 0);

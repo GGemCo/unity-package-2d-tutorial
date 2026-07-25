@@ -9,7 +9,7 @@ using UnityEditor;
 namespace GGemCo2DTutorialEditor
 {
     /// <summary>
-    /// Authoring Asset의 카탈로그 설정을 tutorial TSV 테이블에 동기화합니다.
+    /// Authoring Asset의 Catalog와 복합 자동 시작 조건을 Tutorial TSV 테이블에 동기화합니다.
     /// </summary>
     internal static class TutorialTableExporter
     {
@@ -19,13 +19,22 @@ namespace GGemCo2DTutorialEditor
         private static readonly string[] Headers =
         {
             "Uid", "Name", "Enabled", "Repeatable", "Priority",
+            "StartMatchMode",
             "StartEventType", "StartTargetUid", "StartInputAction",
             "StartIntValue", "StartFloatValue", "StartRequiredCount",
             "PreloadPolicy", "Memo",
         };
 
+        private static readonly string[] StartConditionHeaders =
+        {
+            "Uid", "Name", "Enabled", "TutorialUid", "Order",
+            "Source", "EventType", "StateType", "TargetUid",
+            "InputAction", "IntValue", "FloatValue", "RequiredCount",
+            "Memo",
+        };
+
         /// <summary>
-        /// 같은 UID의 테이블 행을 교체하고 내용이 달라진 경우에만 UTF-8 BOM 없는 TSV로 저장합니다.
+        /// 같은 Tutorial UID의 Catalog와 하위 조건 행을 교체하고 변경된 TSV만 UTF-8 BOM 없이 저장합니다.
         /// </summary>
         /// <param name="asset">테이블에 동기화할 Tutorial 제작 에셋입니다.</param>
         /// <returns>동기화 성공 여부와 실제 파일 변경 여부입니다.</returns>
@@ -40,6 +49,7 @@ namespace GGemCo2DTutorialEditor
 
             try
             {
+                asset.EnsureDefaults();
                 string assetPath = ConfigAddressableTableTutorial.TableTutorial.Path;
                 string absolutePath = Path.Combine(
                     Directory.GetCurrentDirectory(),
@@ -48,13 +58,37 @@ namespace GGemCo2DTutorialEditor
                 Dictionary<string, string> target = FindOrCreate(rows, asset.Uid);
                 WriteAuthoringValues(target, asset);
 
-                string content = BuildContent(rows);
+                string content = BuildContent(rows, Headers);
                 byte[] generatedBytes = Utf8NoBom.GetBytes(content);
                 byte[] existingBytes = File.Exists(absolutePath)
                     ? File.ReadAllBytes(absolutePath)
                     : null;
-                bool changed = !AreBytesEqual(existingBytes, generatedBytes);
-                if (!changed)
+
+                string conditionAssetPath =
+                    ConfigAddressableTableTutorial.TableTutorialStartCondition.Path;
+                string conditionAbsolutePath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    conditionAssetPath);
+                List<Dictionary<string, string>> conditionRows =
+                    ReadRows(conditionAbsolutePath);
+                ReplaceStartConditionRows(conditionRows, asset);
+                string conditionContent = BuildContent(
+                    conditionRows,
+                    StartConditionHeaders);
+                byte[] conditionGeneratedBytes =
+                    Utf8NoBom.GetBytes(conditionContent);
+                byte[] conditionExistingBytes =
+                    File.Exists(conditionAbsolutePath)
+                        ? File.ReadAllBytes(conditionAbsolutePath)
+                        : null;
+
+                bool catalogChanged =
+                    !AreBytesEqual(existingBytes, generatedBytes);
+                bool conditionsChanged =
+                    !AreBytesEqual(
+                        conditionExistingBytes,
+                        conditionGeneratedBytes);
+                if (!catalogChanged && !conditionsChanged)
                 {
                     return TutorialTableExportResult.Success(
                         false,
@@ -64,19 +98,25 @@ namespace GGemCo2DTutorialEditor
                             assetPath));
                 }
 
-                string directoryPath = Path.GetDirectoryName(absolutePath);
-                if (!string.IsNullOrWhiteSpace(directoryPath))
+                if (catalogChanged)
                 {
-                    Directory.CreateDirectory(directoryPath);
+                    WriteTableFile(
+                        absolutePath,
+                        assetPath,
+                        generatedBytes);
                 }
 
-                File.WriteAllBytes(absolutePath, generatedBytes);
-                AssetDatabase.ImportAsset(
-                    assetPath,
-                    ImportAssetOptions.ForceUpdate);
+                if (conditionsChanged)
+                {
+                    WriteTableFile(
+                        conditionAbsolutePath,
+                        conditionAssetPath,
+                        conditionGeneratedBytes);
+                }
+
                 return TutorialTableExportResult.Success(
                     true,
-                    $"Tutorial 테이블 행을 변경했습니다. uid: {asset.Uid}",
+                    $"Tutorial Catalog와 자동 시작 조건을 동기화했습니다. uid: {asset.Uid}",
                     assetPath,
                     AssetDatabase.LoadAssetAtPath<UnityEngine.TextAsset>(
                         assetPath));
@@ -92,23 +132,25 @@ namespace GGemCo2DTutorialEditor
         /// 정규화된 Header 순서로 전체 Tutorial TSV 문자열을 생성합니다.
         /// </summary>
         /// <param name="rows">출력할 테이블 행 목록입니다.</param>
+        /// <param name="headers">출력 순서로 정렬된 컬럼 이름 목록입니다.</param>
         /// <returns>운영체제 기본 줄바꿈이 적용된 TSV 문자열입니다.</returns>
         private static string BuildContent(
-            IReadOnlyList<Dictionary<string, string>> rows)
+            IReadOnlyList<Dictionary<string, string>> rows,
+            IReadOnlyList<string> headers)
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine(string.Join("\t", Headers));
+            builder.AppendLine(string.Join("\t", headers));
             for (int i = 0; i < rows.Count; i++)
             {
                 Dictionary<string, string> row = rows[i];
-                for (int column = 0; column < Headers.Length; column++)
+                for (int column = 0; column < headers.Count; column++)
                 {
                     if (column > 0)
                     {
                         builder.Append('\t');
                     }
 
-                    row.TryGetValue(Headers[column], out string value);
+                    row.TryGetValue(headers[column], out string value);
                     builder.Append(Sanitize(value));
                 }
 
@@ -194,12 +236,15 @@ namespace GGemCo2DTutorialEditor
             Dictionary<string, string> row,
             TutorialAuthoringAsset asset)
         {
-            TutorialAuthoringCondition condition = asset.StartCondition;
+            TutorialAuthoringCondition condition =
+                FindLegacyEventCondition(asset.StartConditions) ??
+                TutorialAuthoringCondition.CreateDefault();
             row["Uid"] = asset.Uid.ToString(CultureInfo.InvariantCulture);
             row["Name"] = asset.Title;
             row["Enabled"] = asset.Enabled ? "Y" : "N";
             row["Repeatable"] = asset.Repeatable ? "Y" : "N";
             row["Priority"] = asset.Priority.ToString(CultureInfo.InvariantCulture);
+            row["StartMatchMode"] = asset.StartMatchMode.ToString();
             row["StartEventType"] = condition.Type.ToString();
             row["StartTargetUid"] = condition.TargetUid.ToString(CultureInfo.InvariantCulture);
             row["StartInputAction"] = condition.InputAction.ToString();
@@ -211,6 +256,123 @@ namespace GGemCo2DTutorialEditor
             row["PreloadPolicy"] = asset.PreloadPolicy.ToString();
             row["Memo"] = asset.Memo;
             row.Remove("StartKey");
+        }
+
+        /// <summary>
+        /// 신규 조건 목록 중 기존 단일 컬럼에 기록할 첫 이벤트 조건을 찾습니다.
+        /// 신규 런타임은 하위 조건 테이블을 우선하므로 이 값은 이전 버전 호환용입니다.
+        /// </summary>
+        /// <param name="conditions">제작 에셋의 자동 시작 조건 목록입니다.</param>
+        /// <returns>첫 이벤트 조건이며 없으면 null입니다.</returns>
+        private static TutorialAuthoringCondition FindLegacyEventCondition(
+            IReadOnlyList<TutorialAuthoringCondition> conditions)
+        {
+            if (conditions == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < conditions.Count; i++)
+            {
+                TutorialAuthoringCondition condition = conditions[i];
+                if (condition != null &&
+                    condition.StartSource ==
+                        TutorialStartConditionSource.Event)
+                {
+                    return condition;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 대상 Tutorial UID의 기존 하위 조건 행을 제거하고 현재 제작 순서대로 다시 생성합니다.
+        /// </summary>
+        /// <param name="rows">전체 자동 시작 조건 테이블 행입니다.</param>
+        /// <param name="asset">조건을 제공할 Tutorial 제작 에셋입니다.</param>
+        private static void ReplaceStartConditionRows(
+            List<Dictionary<string, string>> rows,
+            TutorialAuthoringAsset asset)
+        {
+            string tutorialUidText =
+                asset.Uid.ToString(CultureInfo.InvariantCulture);
+            for (int i = rows.Count - 1; i >= 0; i--)
+            {
+                if (rows[i].TryGetValue(
+                        "TutorialUid",
+                        out string value) &&
+                    value == tutorialUidText)
+                {
+                    rows.RemoveAt(i);
+                }
+            }
+
+            for (int i = 0; i < asset.StartConditions.Count; i++)
+            {
+                TutorialAuthoringCondition condition =
+                    asset.StartConditions[i];
+                if (condition == null)
+                {
+                    continue;
+                }
+
+                long generatedUid = (long)asset.Uid * 1000L + i + 1L;
+                if (generatedUid > int.MaxValue)
+                {
+                    throw new InvalidOperationException(
+                        $"Tutorial UID가 자동 시작 조건 UID 범위를 초과했습니다. uid: {asset.Uid}");
+                }
+
+                var row =
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["Uid"] = generatedUid.ToString(
+                            CultureInfo.InvariantCulture),
+                        ["Name"] = $"{asset.Title} 조건 {i + 1}",
+                        ["Enabled"] = "Y",
+                        ["TutorialUid"] = tutorialUidText,
+                        ["Order"] = i.ToString(CultureInfo.InvariantCulture),
+                        ["Source"] = condition.StartSource.ToString(),
+                        ["EventType"] = condition.Type.ToString(),
+                        ["StateType"] = condition.StartStateType.ToString(),
+                        ["TargetUid"] = condition.TargetUid.ToString(
+                            CultureInfo.InvariantCulture),
+                        ["InputAction"] = condition.InputAction.ToString(),
+                        ["IntValue"] = condition.IntValue.ToString(
+                            CultureInfo.InvariantCulture),
+                        ["FloatValue"] = condition.FloatValue.ToString(
+                            CultureInfo.InvariantCulture),
+                        ["RequiredCount"] =
+                            condition.RequiredCount.ToString(
+                                CultureInfo.InvariantCulture),
+                        ["Memo"] = condition.Memo,
+                    };
+                rows.Add(row);
+            }
+        }
+
+        /// <summary>
+        /// 생성된 TSV 바이트를 UTF-8 BOM 없이 저장하고 Unity AssetDatabase에 반영합니다.
+        /// </summary>
+        /// <param name="absolutePath">저장할 절대 파일 경로입니다.</param>
+        /// <param name="assetPath">Unity 프로젝트 기준 에셋 경로입니다.</param>
+        /// <param name="bytes">저장할 UTF-8 BOM 없는 바이트입니다.</param>
+        private static void WriteTableFile(
+            string absolutePath,
+            string assetPath,
+            byte[] bytes)
+        {
+            string directoryPath = Path.GetDirectoryName(absolutePath);
+            if (!string.IsNullOrWhiteSpace(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            File.WriteAllBytes(absolutePath, bytes);
+            AssetDatabase.ImportAsset(
+                assetPath,
+                ImportAssetOptions.ForceUpdate);
         }
 
         /// <summary>

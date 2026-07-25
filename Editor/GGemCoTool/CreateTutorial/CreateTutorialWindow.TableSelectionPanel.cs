@@ -286,6 +286,7 @@ namespace GGemCo2DTutorialEditor
             startCondition.IntValue = row.StartIntValue;
             startCondition.FloatValue = row.StartFloatValue;
             startCondition.RequiredCount = row.StartRequiredCount;
+            PopulateStartConditionsFromTable(newAsset, row);
 
             AssetDatabase.CreateAsset(newAsset, path);
             AssetDatabase.SaveAssets();
@@ -297,6 +298,60 @@ namespace GGemCo2DTutorialEditor
             EditorGUIUtility.PingObject(newAsset);
             _statusMessage = $"UID {row.Uid} 제작 데이터를 생성했습니다: {path}";
             _statusType = MessageType.Info;
+        }
+
+        /// <summary>
+        /// 신규 하위 조건 테이블을 우선 사용하고 없으면 기존 단일 시작 조건을 제작 목록으로 변환합니다.
+        /// </summary>
+        /// <param name="asset">조건 목록을 채울 제작 에셋입니다.</param>
+        /// <param name="row">기존 Tutorial Catalog 행입니다.</param>
+        private static void PopulateStartConditionsFromTable(
+            TutorialAuthoringAsset asset,
+            StruckTableTutorial row)
+        {
+            asset.StartMatchMode = row.StartMatchMode;
+            asset.StartConditions.Clear();
+            TableTutorialStartCondition table =
+                TableLoaderManagerTutorialEditor
+                    .LoadTutorialStartConditionTable();
+            IReadOnlyList<StruckTableTutorialStartCondition> rows =
+                table?.GetRowsByTutorialUid(row.Uid);
+            if (rows != null && rows.Count > 0)
+            {
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    StruckTableTutorialStartCondition source = rows[i];
+                    TutorialAuthoringCondition condition =
+                        TutorialAuthoringCondition.CreateDefault(
+                            source.EventType);
+                    condition.StartSource = source.Source;
+                    condition.StartStateType = source.StateType;
+                    condition.TargetUid = source.TargetUid;
+                    condition.InputAction = source.InputAction;
+                    condition.IntValue = source.IntValue;
+                    condition.FloatValue = source.FloatValue;
+                    condition.RequiredCount = source.RequiredCount;
+                    condition.Memo = source.Memo;
+                    asset.StartConditions.Add(condition);
+                }
+
+                return;
+            }
+
+            if (row.StartEventType == TutorialEventType.None)
+            {
+                return;
+            }
+
+            TutorialAuthoringCondition legacy =
+                TutorialAuthoringCondition.CreateDefault(row.StartEventType);
+            legacy.StartSource = TutorialStartConditionSource.Event;
+            legacy.TargetUid = row.StartTargetUid;
+            legacy.InputAction = row.StartInputAction;
+            legacy.IntValue = row.StartIntValue;
+            legacy.FloatValue = row.StartFloatValue;
+            legacy.RequiredCount = row.StartRequiredCount;
+            asset.StartConditions.Add(legacy);
         }
     }
 }

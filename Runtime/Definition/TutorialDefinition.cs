@@ -80,6 +80,34 @@ namespace GGemCo2DTutorial
     }
 
     /// <summary>
+    /// 여러 자동 시작 조건을 결합하는 논리 방식을 정의합니다.
+    /// </summary>
+    public enum TutorialStartConditionMatchMode
+    {
+        All = 0,
+        Any = 1,
+    }
+
+    /// <summary>
+    /// 자동 시작 조건이 일회성 이벤트인지 현재 상태 판정인지 구분합니다.
+    /// </summary>
+    public enum TutorialStartConditionSource
+    {
+        Event = 0,
+        State = 1,
+    }
+
+    /// <summary>
+    /// 튜토리얼 자동 시작 시 현재 값을 조회할 수 있는 표준 상태 종류입니다.
+    /// </summary>
+    public enum TutorialStartStateType
+    {
+        None = 0,
+        WindowVisible = 1,
+        MapCleared = 2,
+    }
+
+    /// <summary>
     /// 로드 가능한 튜토리얼 목록입니다.
     /// </summary>
     [Serializable]
@@ -97,7 +125,46 @@ namespace GGemCo2DTutorial
         public int uid;
         public string addressableKey;
         public bool repeatable;
+
+        /// <summary>
+        /// 기존 단일 자동 시작 조건 데이터와의 하위 호환을 위해 유지합니다.
+        /// 신규 Catalog는 <see cref="startConditions"/>를 우선 사용합니다.
+        /// </summary>
         public TutorialConditionDefinition startCondition;
+
+        /// <summary>
+        /// 신규 복합 자동 시작 조건 그룹입니다.
+        /// </summary>
+        public TutorialStartConditionGroup startConditions;
+    }
+
+    /// <summary>
+    /// 하나 이상의 자동 시작 조건과 결합 방식을 보관합니다.
+    /// </summary>
+    [Serializable]
+    public sealed class TutorialStartConditionGroup
+    {
+        public TutorialStartConditionMatchMode matchMode =
+            TutorialStartConditionMatchMode.All;
+        public List<TutorialStartConditionDefinition> conditions =
+            new List<TutorialStartConditionDefinition>();
+    }
+
+    /// <summary>
+    /// 이벤트 발생 이력 또는 현재 런타임 상태를 기준으로 자동 시작 조건을 정의합니다.
+    /// </summary>
+    [Serializable]
+    public sealed class TutorialStartConditionDefinition
+    {
+        public TutorialStartConditionSource source =
+            TutorialStartConditionSource.Event;
+        public TutorialEventType eventType;
+        public TutorialStartStateType stateType;
+        public int targetUid;
+        public TutorialInputActionType inputAction;
+        public int intValue;
+        public float floatValue;
+        public int requiredCount = 1;
     }
 
     /// <summary>

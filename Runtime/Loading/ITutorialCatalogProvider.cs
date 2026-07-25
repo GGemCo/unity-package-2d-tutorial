@@ -22,14 +22,19 @@ namespace GGemCo2DTutorial
     public sealed class TableTutorialCatalogProvider : ITutorialCatalogProvider
     {
         private readonly TableTutorial _tableTutorial;
+        private readonly TableTutorialStartCondition _tableStartCondition;
 
         /// <summary>
         /// TableTutorial 기반 Catalog 공급자를 생성합니다.
         /// </summary>
         /// <param name="tableTutorial">Catalog Entry로 변환할 Tutorial 테이블입니다.</param>
-        public TableTutorialCatalogProvider(TableTutorial tableTutorial)
+        /// <param name="tableStartCondition">Tutorial별 신규 복합 자동 시작 조건 테이블입니다.</param>
+        public TableTutorialCatalogProvider(
+            TableTutorial tableTutorial,
+            TableTutorialStartCondition tableStartCondition = null)
         {
             _tableTutorial = tableTutorial;
+            _tableStartCondition = tableStartCondition;
         }
 
         /// <summary>
@@ -69,7 +74,11 @@ namespace GGemCo2DTutorial
                     continue;
                 }
 
-                TutorialCatalogEntry entry = TableTutorial.ToCatalogEntry(row);
+                IReadOnlyList<StruckTableTutorialStartCondition> startConditions =
+                    _tableStartCondition?.GetRowsByTutorialUid(row.Uid);
+                TutorialCatalogEntry entry = TableTutorial.ToCatalogEntry(
+                    row,
+                    startConditions);
                 if (entry == null)
                 {
                     GcLogger.LogWarning(

@@ -177,7 +177,9 @@ namespace GGemCo2DTutorial
                 return null;
             }
 
-            return new TableTutorialCatalogProvider(tableLoader.TableTutorial);
+            return new TableTutorialCatalogProvider(
+                tableLoader.TableTutorial,
+                tableLoader.TableTutorialStartCondition);
         }
 
         /// <summary>

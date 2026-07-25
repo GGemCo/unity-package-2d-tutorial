@@ -1,0 +1,1 @@
+Uid	Name	Enabled	TutorialUid	Order	Source	EventType	StateType	TargetUid	InputAction	IntValue	FloatValue	RequiredCount	Memo

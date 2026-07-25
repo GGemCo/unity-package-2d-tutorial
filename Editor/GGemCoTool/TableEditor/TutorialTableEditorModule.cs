@@ -36,6 +36,19 @@ namespace GGemCo2DTutorialEditor
                 TableEditorDefinitionFactory.CreateDefaultReloadAction(
                     ConfigAddressableTableTutorial.TableTutorial.Path),
                 TableEditorRegistry.FindReferenceTable);
+
+            yield return TableEditorDefinitionFactory.Create(
+                ModuleName,
+                PackageName,
+                ConfigAddressableTableTutorial.TutorialStartCondition,
+                ConfigAddressableTableTutorial.TableTutorialStartCondition.Path,
+                ConfigAddressableTableTutorial.TutorialStartCondition,
+                typeof(TableTutorialStartCondition),
+                typeof(StruckTableTutorialStartCondition),
+                TableEditorDefinitionFactory.CreateDefaultReloadAction(
+                    ConfigAddressableTableTutorial
+                        .TableTutorialStartCondition.Path),
+                TableEditorRegistry.FindReferenceTable);
         }
     }
 }

@@ -19,5 +19,20 @@ namespace GGemCo2DTutorialEditor
                 ConfigAddressableTableTutorial.TableTutorial.Path,
                 forceReload);
         }
+
+        /// <summary>
+        /// Tutorial 복합 자동 시작 조건 테이블을 Editor 파일 경로에서 로드합니다.
+        /// </summary>
+        /// <param name="forceReload">기존 캐시를 무시하고 다시 로드할지 여부입니다.</param>
+        /// <returns>로드된 자동 시작 조건 테이블입니다.</returns>
+        public static TableTutorialStartCondition LoadTutorialStartConditionTable(
+            bool forceReload = true)
+        {
+            return TableLoaderManagerBase.LoadTable<
+                TableTutorialStartCondition>(
+                ConfigAddressableTableTutorial
+                    .TableTutorialStartCondition.Path,
+                forceReload);
+        }
     }
 }

@@ -123,6 +123,10 @@ namespace GGemCo2DTutorialEditor
             target.Repeatable = row.Repeatable;
             target.Priority = row.Priority;
             target.PreloadPolicy = row.PreloadPolicy;
+            target.StartMatchMode =
+                existing != null
+                    ? existing.StartMatchMode
+                    : row.StartMatchMode;
 
             CopyCondition(target.StartCondition, new TutorialConditionDefinition
             {
@@ -133,6 +137,60 @@ namespace GGemCo2DTutorialEditor
                 floatValue = row.StartFloatValue,
                 requiredCount = row.StartRequiredCount,
             });
+            target.StartConditions.Clear();
+            if (existing?.StartConditions != null)
+            {
+                for (int i = 0; i < existing.StartConditions.Count; i++)
+                {
+                    TutorialAuthoringCondition source =
+                        existing.StartConditions[i];
+                    if (source == null)
+                    {
+                        continue;
+                    }
+
+                    TutorialAuthoringCondition copied =
+                        TutorialAuthoringCondition.CreateDefault(source.Type);
+                    copied.StartSource = source.StartSource;
+                    copied.StartStateType = source.StartStateType;
+                    copied.TargetUid = source.TargetUid;
+                    copied.InputAction = source.InputAction;
+                    copied.IntValue = source.IntValue;
+                    copied.FloatValue = source.FloatValue;
+                    copied.RequiredCount = source.RequiredCount;
+                    copied.Memo = source.Memo;
+                    target.StartConditions.Add(copied);
+                }
+            }
+
+            if (target.StartConditions.Count == 0)
+            {
+                TableTutorialStartCondition startConditionTable =
+                    TableLoaderManagerTutorialEditor
+                        .LoadTutorialStartConditionTable();
+                IReadOnlyList<StruckTableTutorialStartCondition> rows =
+                    startConditionTable?.GetRowsByTutorialUid(row.Uid);
+                if (rows != null && rows.Count > 0)
+                {
+                    target.StartMatchMode = row.StartMatchMode;
+                    for (int i = 0; i < rows.Count; i++)
+                    {
+                        StruckTableTutorialStartCondition source = rows[i];
+                        TutorialAuthoringCondition copied =
+                            TutorialAuthoringCondition.CreateDefault(
+                                source.EventType);
+                        copied.StartSource = source.Source;
+                        copied.StartStateType = source.StateType;
+                        copied.TargetUid = source.TargetUid;
+                        copied.InputAction = source.InputAction;
+                        copied.IntValue = source.IntValue;
+                        copied.FloatValue = source.FloatValue;
+                        copied.RequiredCount = source.RequiredCount;
+                        copied.Memo = source.Memo;
+                        target.StartConditions.Add(copied);
+                    }
+                }
+            }
 
             target.Steps.Clear();
             for (int i = 0; i < definition.steps.Count; i++)

@@ -19,10 +19,22 @@ namespace GGemCo2DTutorial
         public const string Tutorial = "tutorial";
 
         /// <summary>
+        /// Tutorial별 복합 자동 시작 조건 테이블 이름입니다.
+        /// </summary>
+        public const string TutorialStartCondition =
+            "tutorial_start_condition";
+
+        /// <summary>
         /// Tutorial 테이블 Addressables 자산 정보입니다.
         /// </summary>
         public static readonly AddressableAssetInfo TableTutorial =
             ConfigAddressableTable.Make(Tutorial);
+
+        /// <summary>
+        /// Tutorial 복합 자동 시작 조건 테이블 Addressables 자산 정보입니다.
+        /// </summary>
+        public static readonly AddressableAssetInfo TableTutorialStartCondition =
+            ConfigAddressableTable.Make(TutorialStartCondition);
 
         /// <summary>
         /// Tutorial 패키지 런타임 테이블 팩 Addressables 자산 정보입니다.
@@ -36,6 +48,7 @@ namespace GGemCo2DTutorial
         public static readonly List<AddressableAssetInfo> All = new List<AddressableAssetInfo>
         {
             TableTutorial,
+            TableTutorialStartCondition,
         };
     }
 }

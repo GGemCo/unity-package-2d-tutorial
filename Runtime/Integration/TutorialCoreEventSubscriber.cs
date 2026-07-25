@@ -10,7 +10,7 @@ namespace GGemCo2DTutorial
         private bool _isSubscribed;
 
         /// <summary>
-        /// Core 맵 입장, 몬스터 처치, 캐릭터 사망 이벤트를 구독합니다.
+        /// Core 맵 입장, 몬스터 처치, 캐릭터 사망, 맵 진행 변경 이벤트를 구독합니다.
         /// </summary>
         public void Subscribe()
         {
@@ -22,6 +22,7 @@ namespace GGemCo2DTutorial
             GameEventManager.MapEnteredEvent += HandleMapEntered;
             GameEventManager.MonsterKilledEvent += HandleMonsterKilled;
             GameEventManager.CharacterDiedEvent += HandleCharacterDied;
+            GameEventManager.MapProgressChangedEvent += HandleMapProgressChanged;
             _isSubscribed = true;
         }
 
@@ -38,6 +39,7 @@ namespace GGemCo2DTutorial
             GameEventManager.MapEnteredEvent -= HandleMapEntered;
             GameEventManager.MonsterKilledEvent -= HandleMonsterKilled;
             GameEventManager.CharacterDiedEvent -= HandleCharacterDied;
+            GameEventManager.MapProgressChangedEvent -= HandleMapProgressChanged;
             _isSubscribed = false;
         }
 
@@ -76,6 +78,21 @@ namespace GGemCo2DTutorial
             }
 
             TutorialEventBus.PublishPlayerDied();
+        }
+
+        /// <summary>
+        /// Core 맵 진행 변경 중 맵 클리어 상태를 Tutorial 자동 시작 상태로 전달합니다.
+        /// </summary>
+        /// <param name="eventData">변경 종류와 대상 맵 정보입니다.</param>
+        private static void HandleMapProgressChanged(
+            MapProgressChangedEventData eventData)
+        {
+            if (eventData.ChangeType != MapProgressChangeType.MapCleared)
+            {
+                return;
+            }
+
+            TutorialStartStateRegistry.NotifyMapCleared(eventData.MapUid);
         }
     }
 }

@@ -46,6 +46,54 @@ namespace GGemCo2DTutorial
         }
 
         /// <summary>
+        /// 자동 시작 이벤트 조건과 발행된 게임 이벤트가 일치하는지 확인합니다.
+        /// </summary>
+        /// <param name="condition">평가할 자동 시작 이벤트 조건입니다.</param>
+        /// <param name="tutorialEvent">발행된 Tutorial 게임 이벤트입니다.</param>
+        /// <returns>모든 이벤트 인자가 조건과 일치하면 <see langword="true"/>입니다.</returns>
+        public static bool Matches(
+            TutorialStartConditionDefinition condition,
+            in TutorialGameEvent tutorialEvent)
+        {
+            if (condition == null ||
+                condition.source != TutorialStartConditionSource.Event ||
+                !MatchesEventType(condition.eventType, tutorialEvent.Type))
+            {
+                return false;
+            }
+
+            if (condition.targetUid > 0 &&
+                condition.targetUid != tutorialEvent.TargetUid)
+            {
+                return false;
+            }
+
+            if (condition.inputAction != TutorialInputActionType.None &&
+                condition.inputAction != tutorialEvent.InputAction)
+            {
+                return false;
+            }
+
+            if (condition.intValue > 0 &&
+                condition.intValue != tutorialEvent.IntValue)
+            {
+                return false;
+            }
+
+            if (condition.eventType ==
+                TutorialEventType.AutoMoveDistanceReached)
+            {
+                return tutorialEvent.FloatValue + Mathf.Epsilon >=
+                       condition.floatValue;
+            }
+
+            return condition.floatValue <= 0f ||
+                   Mathf.Approximately(
+                       condition.floatValue,
+                       tutorialEvent.FloatValue);
+        }
+
+        /// <summary>
         /// 현재 이벤트 타입과 조건 타입의 일치 여부를 하위 호환 규칙까지 포함하여 확인합니다.
         /// </summary>
         /// <param name="conditionType">튜토리얼 단계에 저장된 조건 타입입니다.</param>

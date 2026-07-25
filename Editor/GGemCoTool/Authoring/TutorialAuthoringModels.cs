@@ -11,6 +11,9 @@ namespace GGemCo2DTutorialEditor
     [Serializable]
     public sealed class TutorialAuthoringCondition
     {
+        [SerializeField] private TutorialStartConditionSource startSource =
+            TutorialStartConditionSource.Event;
+        [SerializeField] private TutorialStartStateType startStateType;
         [SerializeField] private TutorialEventType type;
         [SerializeField] private int targetUid;
         [SerializeField] private TutorialInputActionType inputAction;
@@ -19,6 +22,16 @@ namespace GGemCo2DTutorialEditor
         [SerializeField] private int requiredCount = 1;
         [SerializeField, TextArea(1, 3)] private string memo;
 
+        public TutorialStartConditionSource StartSource
+        {
+            get => startSource;
+            set => startSource = value;
+        }
+        public TutorialStartStateType StartStateType
+        {
+            get => startStateType;
+            set => startStateType = value;
+        }
         public TutorialEventType Type { get => type; set => type = value; }
         public int TargetUid { get => targetUid; set => targetUid = Mathf.Max(0, value); }
         public TutorialInputActionType InputAction { get => inputAction; set => inputAction = value; }
@@ -58,11 +71,42 @@ namespace GGemCo2DTutorialEditor
         }
 
         /// <summary>
+        /// 제작툴의 자동 시작 조건을 이벤트 또는 상태 기반 런타임 DTO로 변환합니다.
+        /// </summary>
+        /// <returns>복합 자동 시작 조건에 사용할 런타임 정의입니다.</returns>
+        public TutorialStartConditionDefinition ToStartRuntimeDefinition()
+        {
+            EnsureDefaults();
+            return new TutorialStartConditionDefinition
+            {
+                source = startSource,
+                eventType = type,
+                stateType = startStateType,
+                targetUid = targetUid,
+                inputAction = inputAction,
+                intValue = intValue,
+                floatValue = floatValue,
+                requiredCount = requiredCount,
+            };
+        }
+
+        /// <summary>
         /// 조건 값을 유효 범위로 보정하고 가이드 완료 조건 정책을 적용합니다.
         /// </summary>
         public void EnsureDefaults()
         {
             targetUid = Mathf.Max(0, targetUid);
+            if (startSource == TutorialStartConditionSource.State)
+            {
+                type = TutorialEventType.None;
+                inputAction = TutorialInputActionType.None;
+                intValue = 0;
+                floatValue = 0f;
+                requiredCount = 1;
+                return;
+            }
+
+            startStateType = TutorialStartStateType.None;
             if (type == TutorialEventType.GuideClicked ||
                 type == TutorialEventType.GuideClosed)
             {
