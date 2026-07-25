@@ -49,6 +49,11 @@ namespace GGemCo2DTutorialEditor
                         "플레이어가 비전투 상태에서 전투 상태로 진입할 때 완료됩니다.",
                         MessageType.Info);
                     break;
+                case TutorialEventType.PlayerDied:
+                    EditorGUILayout.HelpBox(
+                        "플레이어의 사망 상태 전환이 확정될 때 완료됩니다.",
+                        MessageType.Info);
+                    break;
                 case TutorialEventType.InputAction:
                     EditorGUILayout.PropertyField(
                         conditionProperty.FindPropertyRelative("inputAction"),

@@ -98,6 +98,14 @@ namespace GGemCo2DTutorial
         }
 
         /// <summary>
+        /// 플레이어의 사망 상태 전환이 확정되었음을 발행합니다.
+        /// </summary>
+        public static void PublishPlayerDied()
+        {
+            Publish(new TutorialGameEvent(TutorialEventType.PlayerDied));
+        }
+
+        /// <summary>
         /// 현재 가이드의 모든 페이지 확인과 닫기 입력이 완료되었음을 발행합니다.
         /// </summary>
         public static void PublishGuideClosed()

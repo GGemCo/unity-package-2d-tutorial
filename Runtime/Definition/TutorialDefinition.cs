@@ -20,6 +20,7 @@ namespace GGemCo2DTutorial
         GuideClicked = 9,
         CombatStarted = 10,
         GuideClosed = 11,
+        PlayerDied = 12,
     }
 
     /// <summary>

@@ -68,7 +68,8 @@ namespace GGemCo2DTutorialEditor
             {
                 targetUid = 0;
             }
-            else if (type == TutorialEventType.CombatStarted)
+            else if (type == TutorialEventType.CombatStarted ||
+                     type == TutorialEventType.PlayerDied)
             {
                 targetUid = 0;
             }
