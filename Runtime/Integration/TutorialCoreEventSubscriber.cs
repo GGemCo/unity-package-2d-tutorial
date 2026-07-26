@@ -10,7 +10,7 @@ namespace GGemCo2DTutorial
         private bool _isSubscribed;
 
         /// <summary>
-        /// Core 맵 입장, 몬스터 처치, 캐릭터 사망, 맵 진행 변경 이벤트를 구독합니다.
+        /// Core 맵 입장, 몬스터 처치, 아이템 구매, 캐릭터 사망, 맵 진행 변경 이벤트를 구독합니다.
         /// </summary>
         public void Subscribe()
         {
@@ -21,6 +21,7 @@ namespace GGemCo2DTutorial
 
             GameEventManager.MapEnteredEvent += HandleMapEntered;
             GameEventManager.MonsterKilledEvent += HandleMonsterKilled;
+            GameEventManager.ItemPurchasedEvent += HandleItemPurchased;
             GameEventManager.CharacterDiedEvent += HandleCharacterDied;
             GameEventManager.MapProgressChangedEvent += HandleMapProgressChanged;
             _isSubscribed = true;
@@ -38,6 +39,7 @@ namespace GGemCo2DTutorial
 
             GameEventManager.MapEnteredEvent -= HandleMapEntered;
             GameEventManager.MonsterKilledEvent -= HandleMonsterKilled;
+            GameEventManager.ItemPurchasedEvent -= HandleItemPurchased;
             GameEventManager.CharacterDiedEvent -= HandleCharacterDied;
             GameEventManager.MapProgressChangedEvent -= HandleMapProgressChanged;
             _isSubscribed = false;
@@ -63,6 +65,24 @@ namespace GGemCo2DTutorial
             TutorialEventBus.Publish(new TutorialGameEvent(
                 TutorialEventType.KillMonster,
                 targetUid: eventData.monsterUid));
+        }
+
+        /// <summary>
+        /// Core 아이템 구매 완료 이벤트를 구매한 Item UID와 수량 기반 Tutorial 이벤트로 변환합니다.
+        /// </summary>
+        /// <param name="eventData">구매가 확정된 아이템과 상품 정보입니다.</param>
+        private static void HandleItemPurchased(
+            ItemPurchasedEventData eventData)
+        {
+            if (eventData.ItemUid <= 0 || eventData.Count <= 0)
+            {
+                return;
+            }
+
+            TutorialEventBus.Publish(new TutorialGameEvent(
+                TutorialEventType.ItemPurchased,
+                targetUid: eventData.ItemUid,
+                amount: eventData.Count));
         }
 
         /// <summary>

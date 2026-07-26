@@ -166,6 +166,14 @@ namespace GGemCo2DTutorialEditor
                 result.AddError(path, "입력 액션을 선택해야 합니다.");
             }
 
+            if (condition.Type == TutorialEventType.ItemPurchased &&
+                condition.TargetUid <= 0)
+            {
+                result.AddError(
+                    path,
+                    "아이템 구매 조건에는 Item UID가 필요합니다.");
+            }
+
             if (condition.Type == TutorialEventType.AutoMoveDistanceReached)
             {
                 if (condition.TargetUid <= 0)

@@ -94,6 +94,12 @@ namespace GGemCo2DTutorialEditor
                 case TutorialEventType.QuestCompleted:
                     DrawTargetUid(conditionProperty, GetTargetLabel(type));
                     break;
+                case TutorialEventType.ItemPurchased:
+                    DrawTargetUid(conditionProperty, GetTargetLabel(type));
+                    EditorGUILayout.HelpBox(
+                        "구매가 성공한 실제 Item UID를 비교합니다. 필요 횟수는 구매 시도 횟수가 아니라 누적 구매 수량입니다.",
+                        MessageType.Info);
+                    break;
                 case TutorialEventType.GuideClicked:
                     EditorGUILayout.HelpBox(
                         "기존 단일 가이드 클릭 조건입니다. 새 가이드 닫기 이벤트도 호환하여 처리합니다.",
@@ -156,6 +162,7 @@ namespace GGemCo2DTutorialEditor
                 TutorialEventType.UiClicked => "UI Target UID",
                 TutorialEventType.QuestStarted => "Quest UID",
                 TutorialEventType.QuestCompleted => "Quest UID",
+                TutorialEventType.ItemPurchased => "Item UID",
                 _ => "Target UID",
             };
         }

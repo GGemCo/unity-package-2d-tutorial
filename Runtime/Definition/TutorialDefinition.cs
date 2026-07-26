@@ -21,6 +21,7 @@ namespace GGemCo2DTutorial
         CombatStarted = 10,
         GuideClosed = 11,
         PlayerDied = 12,
+        ItemPurchased = 13,
     }
 
     /// <summary>
