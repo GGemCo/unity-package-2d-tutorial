@@ -2,9 +2,109 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GGemCo2DCore;
+using UnityEngine;
 
 namespace GGemCo2DTutorial
 {
+    /// <summary>
+    /// 튜토리얼 시작 시 외부 시스템에 전달하는 수명주기 이벤트 데이터입니다.
+    /// </summary>
+    public readonly struct TutorialStartedEventData
+    {
+        /// <summary>
+        /// 시작한 튜토리얼 UID입니다.
+        /// </summary>
+        public readonly int TutorialUid;
+
+        /// <summary>
+        /// 시작한 단계 인덱스입니다. 저장 진행도를 복원한 경우 0보다 클 수 있습니다.
+        /// </summary>
+        public readonly int StartStepIndex;
+
+        /// <summary>
+        /// 명시적인 재시작 요청으로 시작했는지 여부입니다.
+        /// </summary>
+        public readonly bool IsRestart;
+
+        /// <summary>
+        /// 튜토리얼 시작 이벤트 데이터를 생성합니다.
+        /// </summary>
+        /// <param name="tutorialUid">시작한 튜토리얼 UID입니다.</param>
+        /// <param name="startStepIndex">시작한 단계 인덱스입니다.</param>
+        /// <param name="isRestart">명시적인 재시작 여부입니다.</param>
+        public TutorialStartedEventData(int tutorialUid, int startStepIndex, bool isRestart)
+        {
+            TutorialUid = tutorialUid;
+            StartStepIndex = startStepIndex;
+            IsRestart = isRestart;
+        }
+    }
+
+    /// <summary>
+    /// 튜토리얼 완료 시 외부 시스템에 전달하는 수명주기 이벤트 데이터입니다.
+    /// </summary>
+    public readonly struct TutorialCompletedEventData
+    {
+        /// <summary>
+        /// 완료한 튜토리얼 UID입니다.
+        /// </summary>
+        public readonly int TutorialUid;
+
+        /// <summary>
+        /// 튜토리얼 완료 이벤트 데이터를 생성합니다.
+        /// </summary>
+        /// <param name="tutorialUid">완료한 튜토리얼 UID입니다.</param>
+        public TutorialCompletedEventData(int tutorialUid)
+        {
+            TutorialUid = tutorialUid;
+        }
+    }
+
+    /// <summary>
+    /// Tutorial 패키지의 성공이 확정된 수명주기 변경을 외부 시스템에 전달합니다.
+    /// Analytics 같은 선택 기능은 이 이벤트를 구독하며 Tutorial 런타임은 외부 구현을 직접 참조하지 않습니다.
+    /// </summary>
+    public static class TutorialLifecycleEvents
+    {
+        /// <summary>
+        /// 튜토리얼 실행기가 유효한 정의로 시작된 후 발생합니다.
+        /// </summary>
+        public static event Action<TutorialStartedEventData> Started;
+
+        /// <summary>
+        /// 튜토리얼의 마지막 단계가 완료되고 저장 상태가 갱신된 후 발생합니다.
+        /// </summary>
+        public static event Action<TutorialCompletedEventData> Completed;
+
+        /// <summary>
+        /// 성공한 튜토리얼 시작을 구독자에게 전달합니다.
+        /// </summary>
+        /// <param name="eventData">튜토리얼 시작 데이터입니다.</param>
+        internal static void NotifyStarted(in TutorialStartedEventData eventData)
+        {
+            Started?.Invoke(eventData);
+        }
+
+        /// <summary>
+        /// 성공한 튜토리얼 완료를 구독자에게 전달합니다.
+        /// </summary>
+        /// <param name="eventData">튜토리얼 완료 데이터입니다.</param>
+        internal static void NotifyCompleted(in TutorialCompletedEventData eventData)
+        {
+            Completed?.Invoke(eventData);
+        }
+
+        /// <summary>
+        /// Domain Reload 비활성 환경에서도 이전 플레이 세션의 구독자가 남지 않도록 정적 이벤트를 초기화합니다.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void Reset()
+        {
+            Started = null;
+            Completed = null;
+        }
+    }
+
     /// <summary>
     /// Tutorial Catalog, 자동 시작 조건, 활성 단계와 저장 상태를 조정합니다.
     /// </summary>
@@ -224,7 +324,17 @@ namespace GGemCo2DTutorial
                     startStepIndex = progress.StepIndex;
                 }
 
-                return _stepRunner.Start(definition, startStepIndex);
+                bool started = _stepRunner.Start(definition, startStepIndex);
+                if (started)
+                {
+                    var eventData = new TutorialStartedEventData(
+                        entry.uid,
+                        startStepIndex,
+                        restart);
+                    TutorialLifecycleEvents.NotifyStarted(eventData);
+                }
+
+                return started;
             }
             finally
             {
@@ -241,6 +351,8 @@ namespace GGemCo2DTutorial
         private void HandleTutorialCompleted(int tutorialUid)
         {
             _data.SetProgress(tutorialUid, 0, isCompleted: true);
+            TutorialLifecycleEvents.NotifyCompleted(
+                new TutorialCompletedEventData(tutorialUid));
             TryStartSatisfiedTutorial();
         }
 
